@@ -450,7 +450,17 @@ function cityLinks(city){const ids=cityRouteIds(city);return db.links.filter(l=>
 function cityVehicleIds(city){const ids=new Set(cityLinks(city).map(l=>l.vehicleId));db.vehicles.filter(v=>v.city===city).forEach(v=>ids.add(v.id));return ids}
 function cityDriverIds(city){const ids=new Set(cityLinks(city).map(l=>l.driverId));db.drivers.filter(d=>d.city===city).forEach(d=>ids.add(d.id));return ids}
 function tbl(heads,rows){if(!rows.length)return '<div class="empty">Nenhum registro ainda.</div>';return `<table><thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}<th></th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.paid?'paidrow':''}">${r.cells.map(c=>`<td>${c}</td>`).join('')}<td class="actions">${r.action||`<button onclick="removeItem('${r.type}','${r.id}')">Excluir</button>`}</td></tr>`).join('')}</tbody></table>`}
-window.removeItem=(type,id)=>{if(confirm('Excluir este registro?')){db[type]=db[type].filter(x=>x.id!==id);save()}}
+const ONLINE_TABLE_BY_TYPE={cities:'municipalities',vehicles:'vehicles',drivers:'drivers',routes:'routes',links:'assignments',fuel:'fuelings',attendance:'work_days',maintenance:'maintenance',expenses:'expenses',receivables:'receivables',driverPayments:'driver_payments',documents:'documents',messages:'messages',parts:'parts_purchases',sales:'service_sales'};
+window.removeItem=async(type,id)=>{
+ if(!confirm('Excluir este registro?'))return;
+ const item=(db[type]||[]).find(x=>x.id===id),table=ONLINE_TABLE_BY_TYPE[type],isUuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id||'');
+ try{
+  if(ONLINE_ROLE==='admin'&&table&&isUuid)await api(table+'?id=eq.'+encodeURIComponent(id),{method:'DELETE'});
+  db[type]=(db[type]||[]).filter(x=>x.id!==id);save();render();
+ }catch(e){
+  console.error(e);alert('Não foi possível excluir este registro online. Ele pode estar vinculado a outro cadastro. Nenhum dado foi removido.\n\n'+e.message);
+ }
+}
 function drawBar(canvas,labels,values){if(!canvas)return;const dpr=window.devicePixelRatio||1,w=canvas.clientWidth||500,h=canvas.clientHeight||240;canvas.width=w*dpr;canvas.height=h*dpr;const c=canvas.getContext('2d');c.scale(dpr,dpr);c.clearRect(0,0,w,h);const pad=42,max=Math.max(1,...values.map(v=>Math.abs(v))),slot=(w-pad*2)/Math.max(labels.length,1),bw=slot*.55;c.strokeStyle='#cfd6e2';c.beginPath();c.moveTo(pad,12);c.lineTo(pad,h-pad);c.lineTo(w-10,h-pad);c.stroke();values.forEach((v,i)=>{const x=pad+slot*i+(slot-bw)/2,bh=Math.abs(v)/max*(h-pad-30),y=h-pad-bh;c.fillStyle=v<0?'#b42318':'#2563eb';c.fillRect(x,y,bw,bh);c.fillStyle='#475467';c.font='11px Arial';c.textAlign='center';c.fillText(labels[i],x+bw/2,h-pad+16);c.fillText((v/1000).toFixed(1)+'k',x+bw/2,Math.max(12,y-5))})}
 function metrics(city='',month=''){
  const routes=db.routes.filter(r=>(!city||r.city===city)&&(!month||r.month===month)), rids=new Set(routes.map(r=>r.id));
