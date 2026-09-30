@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#17233b">
+<meta name="theme-color" content="#17233b">\n<link rel="manifest" href="/manifest.webmanifest">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-status-bar-style" content="default">\n<meta name="apple-mobile-web-app-title" content="Gestão Frota">\n<link rel="apple-touch-icon" href="/icon.svg">
 <title>Gestão Escolar Frota V6.0</title>
 <style>
 :root{--bg:#f5f7fb;--nav:#17233b;--card:#fff;--line:#dfe5ee;--text:#1d2939;--muted:#667085;--accent:#2563eb;--ok:#027a48;--warn:#b54708;--danger:#b42318}
@@ -749,6 +749,6 @@ $('helpModal').addEventListener('click',e=>{if(e.target===$('helpModal'))$('help
 $('helpSearch').addEventListener('input',e=>renderHelp(e.target.value));
 
 $('historyMonth').value=nowMonth();
-render();renderMessages();renderHelp();
+render();renderMessages();renderHelp();\nif('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
 </script>
-</body></html
+</body></html>
