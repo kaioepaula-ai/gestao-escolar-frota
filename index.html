@@ -464,8 +464,8 @@ function metrics(city='',month=''){
 }
 let selectedCity=''; let activeSub='resumo';
 $('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-page]');if(!b)return;document.querySelectorAll('#nav button,.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.page).classList.add('active');render()});
-$('cityForm').addEventListener('submit',e=>{e.preventDefault();const name=$('newCity').value.trim();if(name&&!allCities().some(c=>c.toLowerCase()===name.toLowerCase()))db.cities.push({id:uid(),name});selectedCity=name;$('newCity').value='';save()});
-$('routeForm').addEventListener('submit',e=>{e.preventDefault();db.routes.push({id:uid(),city:$('rCity').value,contract:$('rContract').value.trim(),route:$('rRoute').value.trim(),income:+$('rIncome').value||0,month:$('rMonth').value,status:$('rStatus').value});e.target.reset();save()});
+$('cityForm').addEventListener('submit',async e=>{e.preventDefault();const name=$('newCity').value.trim();if(!name)return;if(allCities().some(c=>c.toLowerCase()===name.toLowerCase())){selectedCity=allCities().find(c=>c.toLowerCase()===name.toLowerCase())||name;$('newCity').value='';render();return}db.cities.push({id:uid(),name});selectedCity=name;$('newCity').value='';save();if(ONLINE_ROLE==='admin')await syncCoreOnline()});
+$('routeForm').addEventListener('submit',async e=>{e.preventDefault();db.routes.push({id:uid(),city:$('rCity').value,contract:$('rContract').value.trim(),route:$('rRoute').value.trim(),income:+$('rIncome').value||0,month:$('rMonth').value,status:$('rStatus').value});e.target.reset();save();if(ONLINE_ROLE==='admin')await syncCoreOnline()});
 window.setCityTab=city=>{selectedCity=city;activeSub='resumo';renderMunicipios()}
 window.setSubtab=id=>{activeSub=id;document.querySelectorAll('.subtab,.subpage').forEach(x=>x.classList.remove('active'));document.querySelector(`.subtab[data-sub="${id}"]`)?.classList.add('active');$('sub_'+id)?.classList.add('active')}
 window.togglePaid=id=>{
@@ -511,7 +511,7 @@ window.addCityRecord=async(type)=>{
  if(type==='document')db.documents.push({id:uid(),ownerType:g('cdoType'),ownerId:g('cdoOwner'),name:g('cdoName').trim(),expiry:g('cdoExpiry'),obs:g('cdoObs').trim()});
  if(type==='receivable'){const gross=+g('crGross')||0,percent=+g('crPercent')||0,retained=gross*percent/100,net=gross-retained;db.receivables.push({id:uid(),routeId:g('crRoute'),month:g('crMonth'),invoice:g('crInvoice').trim(),gross,percent,retained,net,value:net,due:g('crDue'),status:g('crStatus')});}
  if(type==='expense')db.expenses.push({id:uid(),date:g('ceDate'),typeName:g('ceType').trim(),value:+g('ceValue')||0,vehicleId:g('ceVehicle'),routeId:g('ceRoute')});
- save()
+ save();if(ONLINE_ROLE==='admin')await syncCoreOnline()
 }
 function options(items,label){return '<option value="">Selecione</option>'+items.map(x=>`<option value="${x.id}">${esc(label(x))}</option>`).join('')}
 
