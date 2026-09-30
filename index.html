@@ -470,6 +470,11 @@ window.togglePaid=id=>{
 }
 window.updateReceiptLabel=input=>{const f=input?.files?.[0],e=document.getElementById('cfReceiptStatus');if(!e)return;if(f){e.textContent='✓ Foto anexada: '+f.name;e.className='badge good'}else{e.textContent='Nenhum comprovante';e.className='badge'}};
 
+
+window.fieldValue=id=>document.getElementById(id)?.value||'';
+window.calcServiceTotal=p=>{const q=Number(fieldValue(p+'Quantity').replace(',','.'))||0,u=parseBRL(fieldValue(p+'UnitValue')),el=document.getElementById(p+'Total');if(el)el.value=money(q*u)};
+window.addServiceSale=async(category,p)=>{if(selectedCity!=='CATARINA'){alert('Esses lançamentos estão disponíveis somente em Catarina.');return}if(ONLINE_ROLE==='employee'&&!canEmployee('service_sales','insert')){alert('Sem permissão.');return}try{const cityRow=(await api('municipalities?select=id&name=eq.'+encodeURIComponent(selectedCity)))?.[0];if(!cityRow)throw new Error('Município Catarina não encontrado.');const q=Number(fieldValue(p+'Quantity').replace(',','.'))||0,u=parseBRL(fieldValue(p+'UnitValue'));await api('service_sales',{method:'POST',body:JSON.stringify({municipality_id:cityRow.id,category,description:fieldValue(p+'Description').trim(),record_date:fieldValue(p+'Date')||new Date().toISOString().slice(0,10),measure:fieldValue(p+'Measure').trim(),quantity:q,unit_value:u,notes:fieldValue(p+'Notes').trim(),created_by:currentSession().user.id})});await loadCoreOnline();alert('Registro salvo com sucesso.')}catch(e){alert('Não foi possível salvar: '+e.message)}};
+
 window.addCityRecord=async(type)=>{
  const city=selectedCity;if(!city)return;
  const g=id=>document.getElementById(id)?.value||'';
@@ -745,6 +750,3 @@ $('historyMonth').value=nowMonth();
 render();renderMessages();renderHelp();
 </script>
 </body></html
-function calcServiceTotal(p){const q=Number(document.getElementById(p+'Quantity')?.value)||0,u=parseBRL(document.getElementById(p+'UnitValue')?.value),el=document.getElementById(p+'Total');if(el)el.value=money(q*u)}
-async function addServiceSale(category,p){if(selectedCity!=='CATARINA'){alert('Esses lançamentos estão disponíveis somente em Catarina.');return}if(ONLINE_ROLE==='employee'&&!canEmployee('service_sales','insert')){alert('Sem permissão.');return}try{const cityRow=(await api('municipalities?select=id&name=eq.'+encodeURIComponent(selectedCity)))?.[0];const q=Number(g(p+'Quantity'))||0,u=parseBRL(g(p+'UnitValue'));await api('service_sales',{method:'POST',body:JSON.stringify({municipality_id:cityRow.id,category,description:g(p+'Description').trim(),record_date:g(p+'Date')||new Date().toISOString().slice(0,10),measure:g(p+'Measure').trim(),quantity:q,unit_value:u,notes:g(p+'Notes').trim(),created_by:currentSession().user.id})});await loadCoreOnline()}catch(e){alert('Não foi possível salvar: '+e.message)}}
->
