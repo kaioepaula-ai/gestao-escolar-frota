@@ -37,9 +37,7 @@ body.employee-mode #settingsBtn,
 body.employee-mode #nav button:not([data-page="municipios"]),
 body.employee-mode #cityForm,
 body.employee-mode .historybar{display:none!important}
-body.employee-mode .subtab:not([data-sub="abastecimentos"]){display:none!important}
-body.employee-mode .subpage:not(#sub_abastecimentos){display:none!important}
-body.employee-mode #sub_abastecimentos{display:block!important}
+body.employee-mode .subtab.employee-denied,body.employee-mode .subpage.employee-denied{display:none!important}
 body.employee-mode #syncBtn{display:inline-block!important}
 .alert-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.alert-item{border:1px solid var(--line);border-left:5px solid #f79009;border-radius:8px;padding:10px;background:#fff}.alert-item.danger{border-left-color:#d92d20;background:#fff5f5}.alert-item.ok{border-left-color:#12b76a}.receipt-thumb{max-width:90px;max-height:70px;border-radius:6px;border:1px solid var(--line)}@media(max-width:900px){.alert-grid{grid-template-columns:1fr}}
 
@@ -164,7 +162,16 @@ const SUPABASE_KEY='sb_publishable_VH6Sxzm-4hZHJ0fxvxYV_A_-p3VMCwn';
 const AUTH_STORE='gef_online_session';
 function authHeaders(token){return {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(token||SUPABASE_KEY),'Content-Type':'application/json'}}
 function setAuthStatus(msg,bad=false){const e=document.getElementById('authStatus');if(e){e.textContent=msg;e.style.color=bad?'#b42318':'#344054'}}
-let ONLINE_ROLE='unknown';
+let ONLINE_ROLE='unknown', ONLINE_PERMS={};
+const EMPLOYEE_TAB_MODULE={abastecimentos:'fuelings',dias:'work_days',manutencao:'maintenance',documentos:'documents'};
+function canEmployee(mod,perm='view'){return ONLINE_ROLE!=='employee'||!!ONLINE_PERMS[mod]?.[perm]}
+function applyEmployeePermissions(){
+ if(ONLINE_ROLE!=='employee')return;
+ const allowed=Object.entries(EMPLOYEE_TAB_MODULE).filter(([tab,mod])=>canEmployee(mod,'view')).map(x=>x[0]);
+ document.querySelectorAll('.subtab').forEach(el=>el.classList.toggle('employee-denied',!allowed.includes(el.dataset.sub)));
+ document.querySelectorAll('.subpage').forEach(el=>{const tab=el.id.replace('sub_','');el.classList.toggle('employee-denied',!allowed.includes(tab))});
+ if(!allowed.includes(activeSub)){activeSub=allowed[0]||'abastecimentos';document.querySelectorAll('.subtab,.subpage').forEach(x=>x.classList.remove('active'));document.querySelector(`.subtab[data-sub="${activeSub}"]`)?.classList.add('active');document.getElementById('sub_'+activeSub)?.classList.add('active')}
+}
 async function showApp(session){
  document.getElementById('authGate').style.display='none';
  const email=session.user?.email||'Usuário';
@@ -174,6 +181,11 @@ async function showApp(session){
   const p=await api('profiles?select=role,full_name,active&id=eq.'+encodeURIComponent(session.user.id));
   const profile=p?.[0];
   ONLINE_ROLE=profile?.role==='admin'?'admin':'employee';
+  ONLINE_PERMS={};
+  if(ONLINE_ROLE==='employee'){
+   const perms=await api('user_module_permissions?select=module,can_view,can_insert,can_update&user_id=eq.'+encodeURIComponent(session.user.id));
+   (perms||[]).forEach(x=>ONLINE_PERMS[x.module]={view:!!x.can_view,insert:!!x.can_insert,update:!!x.can_update});
+  }
   const role=ONLINE_ROLE==='admin'?'Administrador':'Funcionário';
   document.body.classList.toggle('employee-mode',ONLINE_ROLE==='employee');
   document.getElementById('settingsBtn').style.display=ONLINE_ROLE==='admin'?'':'none';
@@ -384,8 +396,8 @@ async function loadCoreOnline(){
   db=local;
   if(ONLINE_ROLE!=='employee') save(local);
   status.textContent='☁ Online atualizado';
-  if(ONLINE_ROLE==='employee'){selectedCity=allCities()[0]||'';activeSub='abastecimentos';document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page==='municipios'));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='municipios'));}
-  render(); return true;
+  if(ONLINE_ROLE==='employee'){selectedCity=allCities()[0]||'';activeSub=Object.entries(EMPLOYEE_TAB_MODULE).find(([t,m])=>canEmployee(m,'view'))?.[0]||'abastecimentos';document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page==='municipios'));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='municipios'));}
+  render(); applyEmployeePermissions(); return true;
  }catch(e){console.error(e);status.textContent='⚠ Falha ao atualizar';alert('Falha ao baixar a base online: '+e.message);return false;}
 }
 
@@ -459,6 +471,19 @@ window.updateReceiptLabel=input=>{const f=input?.files?.[0],e=document.getElemen
 window.addCityRecord=async(type)=>{
  const city=selectedCity;if(!city)return;
  const g=id=>document.getElementById(id)?.value||'';
+ if(ONLINE_ROLE==='employee'&&['attendance','maintenance','document'].includes(type)){
+  const module={attendance:'work_days',maintenance:'maintenance',document:'documents'}[type];
+  if(!canEmployee(module,'insert')){alert('Você não tem permissão para cadastrar neste módulo.');return}
+  try{
+   syncMsg('☁ Salvando...');
+   const cityRow=(await api('municipalities?select=id&name=eq.'+encodeURIComponent(city)))?.[0];
+   if(!cityRow)throw new Error('Município não autorizado.');
+   if(type==='attendance')await api('work_days',{method:'POST',body:JSON.stringify({municipality_id:cityRow.id,route_id:g('caRoute'),work_date:(g('caMonth')||nowMonth())+'-01',status:'summary',notes:JSON.stringify({planned:+g('caPlanned')||0,worked:+g('caWorked')||0,obs:g('caObs').trim()}),created_by:currentSession().user.id})});
+   if(type==='maintenance')await api('maintenance',{method:'POST',body:JSON.stringify({municipality_id:cityRow.id,vehicle_id:g('cmVehicle'),service_date:g('cmDate'),description:g('cmService').trim(),amount:+g('cmValue')||0,next_km:+g('cmNextKm')||null,next_date:g('cmNextDate')||null,created_by:currentSession().user.id})});
+   if(type==='document')await api('documents',{method:'POST',body:JSON.stringify({municipality_id:cityRow.id,owner_type:g('cdoType')==='Motorista'?'driver':'vehicle',owner_id:g('cdoOwner'),title:g('cdoName').trim(),document_type:g('cdoName').trim(),expiry_date:g('cdoExpiry')||null,notes:g('cdoObs').trim()})});
+   syncMsg('✓ Salvo online');await loadCoreOnline();return;
+  }catch(e){syncMsg('Falha ao salvar',true);alert('Não foi possível salvar: '+e.message);return}
+ }
  if(type==='vehicle')db.vehicles.push({id:uid(),city,plate:g('cvPlate').trim().toUpperCase(),model:g('cvModel').trim(),km:+g('cvKm')||0,crlvExpiry:g('cvCrlv')});
  if(type==='driver')db.drivers.push({id:uid(),city,name:g('cdName').trim(),cnh:g('cdCnh').trim(),value:+g('cdValue')||0,bank:g('cdBank').trim(),agency:g('cdAgency').trim(),account:g('cdAccount').trim(),operation:g('cdOperation').trim()});
  if(type==='link')db.links.push({id:uid(),routeId:g('clRoute'),vehicleId:g('clVehicle'),driverId:g('clDriver'),start:g('clStart'),end:g('clEnd')});
