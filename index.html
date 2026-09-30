@@ -56,9 +56,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
 <style>
 #authGate{position:fixed;inset:0;background:#f4f7fb;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.auth-card{width:min(430px,100%);background:white;border-radius:18px;padding:26px;box-shadow:0 18px 60px #0002}.auth-card h2{margin:0 0 6px}.auth-card input{width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1px solid #ccd4df;border-radius:9px}.auth-actions{display:flex;gap:8px;flex-wrap:wrap}.auth-status{margin-top:12px;font-size:14px}.user-badge{font-size:12px;background:#ffffff22;padding:7px 10px;border-radius:999px}.logout-btn{border:1px solid #ffffff55;background:transparent;color:white;border-radius:8px;padding:7px 10px;cursor:pointer}
 </style><style>
-.virtual-assistant-btn{position:fixed;right:18px;bottom:18px;z-index:9000;border:0;border-radius:999px;background:#17233b;color:#fff;padding:13px 17px;box-shadow:0 8px 26px #0003;cursor:pointer;font-weight:700}
-.virtual-assistant{position:fixed;right:18px;bottom:76px;z-index:9001;width:min(390px,calc(100vw - 24px));max-height:min(600px,72vh);background:#fff;border:1px solid #dbe2ea;border-radius:18px;box-shadow:0 18px 55px #0003;display:none;overflow:hidden}
-.virtual-assistant.open{display:flex;flex-direction:column}.va-head{background:#17233b;color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}.va-head button{background:transparent;border:0;color:#fff;font-size:22px;cursor:pointer}.va-body{padding:14px;overflow:auto}.va-msg{padding:10px 12px;border-radius:12px;margin:7px 0;line-height:1.4}.va-msg.bot{background:#f2f5f9}.va-msg.user{background:#e8f0ff;margin-left:34px}.va-form{display:flex;gap:7px;padding:10px;border-top:1px solid #e4e7ec}.va-form input{flex:1;margin:0}.va-form button{white-space:nowrap}@media(max-width:560px){.virtual-assistant-btn{right:12px;bottom:12px}.virtual-assistant{right:12px;bottom:68px}}
+.help-assistant{margin:14px 0;border:1px solid #dbe2ea;border-radius:14px;overflow:hidden;background:#fff}.help-assistant-head{background:#17233b;color:#fff;padding:12px 14px}.help-assistant-body{padding:12px;max-height:260px;overflow:auto;background:#fbfcfe}.va-msg{padding:10px 12px;border-radius:12px;margin:7px 0;line-height:1.4}.va-msg.bot{background:#eef2f7}.va-msg.user{background:#e8f0ff;margin-left:34px}.va-form{display:flex;gap:7px;padding:10px;border-top:1px solid #e4e7ec}.va-form input{flex:1;margin:0}.va-form button{white-space:nowrap}@media(max-width:560px){.va-form{flex-direction:column}}
 </style></head>
 <body>
 <div id="authGate">
@@ -126,12 +124,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
 </main></div>
 
 
-<button class="virtual-assistant-btn" id="virtualAssistantBtn" type="button">💬 Assistente</button>
-<div class="virtual-assistant" id="virtualAssistant">
- <div class="va-head"><div><b>Assistente do Sistema</b><div style="font-size:12px;opacity:.8">Gestão Escolar Frota</div></div><button id="virtualAssistantClose" type="button">×</button></div>
- <div class="va-body" id="virtualAssistantBody"><div class="va-msg bot">Olá! Posso explicar como usar o Gestão Escolar Frota. Pergunte, por exemplo: “Como cadastro um motorista?”, “O que é competência?” ou “Como lançar abastecimento?”.</div></div>
- <form class="va-form" id="virtualAssistantForm"><input id="virtualAssistantInput" autocomplete="off" placeholder="Digite sua dúvida sobre o sistema..."><button class="primary" type="submit">Enviar</button></form>
-</div><div class="modal" id="settingsModal"><div class="modal-card">
+<div class="modal" id="settingsModal"><div class="modal-card">
 <div class="modal-head"><div><h2 style="margin:0">⚙️ Configurações</h2><p class="note" style="margin-top:4px">Conta, acesso e administração do sistema.</p></div><button class="closebtn" id="closeSettings">×</button></div>
 <div class="card">
   <h3 style="margin-top:0">Usuário conectado</h3>
@@ -161,7 +154,9 @@ body.employee-mode #syncBtn{display:inline-block!important}
 </div></div>
 <div class="modal" id="helpModal"><div class="modal-card">
 <div class="modal-head"><div><h2 style="margin:0">Central de Ajuda</h2><p class="note" style="margin-top:4px">Manual completo do sistema: telas, botões, campos, cálculos, histórico e operação.</p></div><button class="closebtn" id="closeHelp">×</button></div>
-<div class="help-tip"><b>Como usar:</b> pesquise o nome de qualquer campo ou função, por exemplo: Agência, Operação, Competência, KM, Vínculo, Status, Receita, Resultado, Já pago, Histórico ou Recados.</div><div class="help-search"><input id="helpSearch" placeholder="Digite o nome de qualquer campo ou dúvida..."></div>
+<div class="help-tip"><b>Como usar:</b> você pode perguntar ao Assistente ou pesquisar diretamente no manual abaixo.</div>
+<div class="help-assistant"><div class="help-assistant-head"><b>💬 Assistente do Sistema</b><div style="font-size:12px;opacity:.85">Pergunte qualquer dúvida sobre o Gestão Escolar Frota</div></div><div class="help-assistant-body" id="virtualAssistantBody"><div class="va-msg bot">Olá! Posso explicar como usar o sistema. Pergunte, por exemplo: “Como cadastro um motorista?”, “O que é competência?” ou “Como lançar abastecimento?”.</div></div><form class="va-form" id="virtualAssistantForm"><input id="virtualAssistantInput" autocomplete="off" placeholder="Digite sua dúvida sobre o sistema..."><button class="primary" type="submit">Perguntar</button></form></div>
+<div class="help-search"><input id="helpSearch" placeholder="Digite o nome de qualquer campo ou dúvida..."></div>
 <div id="helpList"></div>
 <div class="card" style="margin-top:12px"><b>Não encontrou?</b><p class="note" style="margin:6px 0 0">Esta central foi ampliada para documentar praticamente todos os campos e funções existentes nesta versão. Ela funciona sem internet. Na versão online, ainda poderemos acrescentar um assistente inteligente para interpretar perguntas livres.</p></div>
 </div></div>
@@ -620,19 +615,7 @@ $('closeMessages').addEventListener('click',()=>$('messagesModal').classList.rem
 $('messagesModal').addEventListener('click',e=>{if(e.target===$('messagesModal'))$('messagesModal').classList.remove('open')});
 $('messageForm').addEventListener('submit',e=>{e.preventDefault();db.messages.push({id:uid(),from:$('msgFrom').value.trim(),to:$('msgTo').value.trim(),text:$('msgText').value.trim(),createdAt:new Date().toISOString(),readAt:null});e.target.reset();save();renderMessages();render()});
 $('historyMonth').addEventListener('change',render);
-$('historyCurrent').addEventListener('click',()=>{function assistantAnswer(q){
- const term=(q||'').trim().toLocaleLowerCase('pt-BR');if(!term)return 'Digite uma dúvida sobre o sistema.';
- const words=term.split(/\s+/).filter(w=>w.length>2&&!['como','para','que','uma','por','dos','das','com','onde','qual'].includes(w));
- let best=null,score=0;
- HELP.forEach(x=>{const hay=(x[0]+' '+x[1]).toLocaleLowerCase('pt-BR');let s=0;words.forEach(w=>{if(hay.includes(w))s+=2});if(x[0].toLocaleLowerCase('pt-BR').includes(term))s+=6;if(s>score){score=s;best=x}});
- if(best&&score>0)return best[0]+': '+best[1];
- return 'Ainda não encontrei uma resposta específica para essa pergunta. Tente citar o campo ou módulo, como motorista, veículo, município, abastecimento, manutenção, financeiro, contrato, documento, histórico ou recados.';
-}
-function addAssistantMessage(text,who){const b=$('virtualAssistantBody'),d=document.createElement('div');d.className='va-msg '+who;d.textContent=text;b.appendChild(d);b.scrollTop=b.scrollHeight}
-$('virtualAssistantBtn').addEventListener('click',()=>{$('virtualAssistant').classList.toggle('open');if($('virtualAssistant').classList.contains('open'))setTimeout(()=>$('virtualAssistantInput').focus(),50)});
-$('virtualAssistantClose').addEventListener('click',()=>$('virtualAssistant').classList.remove('open'));
-$('virtualAssistantForm').addEventListener('submit',e=>{e.preventDefault();const i=$('virtualAssistantInput'),q=i.value.trim();if(!q)return;addAssistantMessage(q,'user');i.value='';setTimeout(()=>addAssistantMessage(assistantAnswer(q),'bot'),120)});
-$('historyMonth').value=nowMonth();render()});
+$('historyCurrent').addEventListener('click',()=>{$('historyMonth').value=nowMonth();render()});
 
 
 const HELP=[
@@ -769,7 +752,17 @@ function renderHelp(q=''){
  const items=HELP.filter(x=>!term||(`${x[0]} ${x[1]}`).toLocaleLowerCase('pt-BR').includes(term));
  $('helpList').innerHTML=items.length?items.map((x,i)=>`<div class="help-item"><button type="button" class="help-q" onclick="this.parentElement.classList.toggle('open')">${esc(x[0])}</button><div class="help-a">${esc(x[1])}</div></div>`).join(''):'<div class="empty">Não encontrei essa dúvida no manual desta versão. Tente palavras como motorista, financeiro, histórico, abastecimento, recado ou município.</div>';
 }
-$('helpBtn').addEventListener('click',()=>{$('helpModal').classList.add('open');$('helpSearch').value='';renderHelp();setTimeout(()=>$('helpSearch').focus(),50)});
+function assistantAnswer(q){
+ const term=(q||'').trim().toLocaleLowerCase('pt-BR');if(!term)return 'Digite uma dúvida sobre o sistema.';
+ const stop=new Set(['como','para','que','uma','por','dos','das','com','onde','qual','isso','este','esta','meu','minha']);
+ const words=term.replace(/[^a-zà-ú0-9 ]/gi,' ').split(/\s+/).filter(w=>w.length>2&&!stop.has(w));
+ let best=null,score=0;
+ HELP.forEach(x=>{const title=x[0].toLocaleLowerCase('pt-BR'),hay=(x[0]+' '+x[1]).toLocaleLowerCase('pt-BR');let s=0;words.forEach(w=>{if(title.includes(w))s+=4;else if(hay.includes(w))s+=1});if(title.includes(term))s+=8;if(s>score){score=s;best=x}});
+ return best&&score>0?best[0]+': '+best[1]:'Ainda não encontrei essa dúvida no manual. Tente mencionar o módulo ou campo, como motorista, veículo, município, abastecimento, manutenção, financeiro, contrato, documento, histórico ou recados.';
+}
+function addAssistantMessage(message,who){const b=$('virtualAssistantBody');if(!b)return;const d=document.createElement('div');d.className='va-msg '+who;d.textContent=message;b.appendChild(d);b.scrollTop=b.scrollHeight}
+$('virtualAssistantForm').addEventListener('submit',e=>{e.preventDefault();const i=$('virtualAssistantInput'),q=i.value.trim();if(!q)return;addAssistantMessage(q,'user');i.value='';addAssistantMessage(assistantAnswer(q),'bot');});
+$('helpBtn').addEventListener('click',()=>{$('helpModal').classList.add('open');$('helpSearch').value='';renderHelp();setTimeout(()=>$('virtualAssistantInput').focus(),50)});
 $('closeHelp').addEventListener('click',()=>$('helpModal').classList.remove('open'));
 $('helpModal').addEventListener('click',e=>{if(e.target===$('helpModal'))$('helpModal').classList.remove('open')});
 $('helpSearch').addEventListener('input',e=>renderHelp(e.target.value));
