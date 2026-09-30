@@ -57,7 +57,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
 #authGate{position:fixed;inset:0;background:#f4f7fb;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.auth-card{width:min(430px,100%);background:white;border-radius:18px;padding:26px;box-shadow:0 18px 60px #0002}.auth-card h2{margin:0 0 6px}.auth-card input{width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1px solid #ccd4df;border-radius:9px}.auth-actions{display:flex;gap:8px;flex-wrap:wrap}.auth-status{margin-top:12px;font-size:14px}.user-badge{font-size:12px;background:#ffffff22;padding:7px 10px;border-radius:999px}.logout-btn{border:1px solid #ffffff55;background:transparent;color:white;border-radius:8px;padding:7px 10px;cursor:pointer}
 </style><style>
 .help-assistant{margin:14px 0;border:1px solid #dbe2ea;border-radius:14px;overflow:hidden;background:#fff}.help-assistant-head{background:#17233b;color:#fff;padding:12px 14px}.help-assistant-body{padding:12px;max-height:260px;overflow:auto;background:#fbfcfe}.va-msg{padding:10px 12px;border-radius:12px;margin:7px 0;line-height:1.4}.va-msg.bot{background:#eef2f7}.va-msg.user{background:#e8f0ff;margin-left:34px}.va-form{display:flex;gap:7px;padding:10px;border-top:1px solid #e4e7ec}.va-form input{flex:1;margin:0}.va-form button{white-space:nowrap}@media(max-width:560px){.va-form{flex-direction:column}}
-</style></head>
+.bottom-help-btn{position:fixed;right:18px;bottom:18px;z-index:8000;border:0;border-radius:999px;background:#17233b;color:#fff;padding:13px 18px;box-shadow:0 8px 26px #0003;cursor:pointer;font-weight:700;font-size:14px}@media(max-width:560px){.bottom-help-btn{right:12px;bottom:12px}}</style></head>
 <body>
 <div id="authGate">
  <div class="auth-card">
@@ -69,7 +69,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
  </div>
 </div>
 
-<header><h1>Gestão Escolar Frota</h1><div class="header-right"><span class="user-badge" id="onlineUser">V6.0 • Online</span><button class="header-btn" id="helpBtn">❓ Ajuda</button><button class="header-btn" id="messagesBtn">💬 Recados <span class="msg-count" id="msgCount">0</span></button><button class="header-btn" id="syncBtn" type="button">☁ Enviar</button><button class="header-btn" id="cloudLoadBtn" type="button">↻ Atualizar online</button><span class="user-badge" id="syncStatus">Local preservado</span><button class="header-btn" id="settingsBtn" type="button">⚙️ Configurações</button><button class="header-btn" id="logoutBtn" type="button">🚪 Sair</button></div></header>
+<header><h1>Gestão Escolar Frota</h1><div class="header-right"><span class="user-badge" id="onlineUser">V6.0 • Online</span><button class="header-btn" id="messagesBtn">💬 Recados <span class="msg-count" id="msgCount">0</span></button><button class="header-btn" id="syncBtn" type="button">☁ Enviar</button><button class="header-btn" id="cloudLoadBtn" type="button">↻ Atualizar online</button><span class="user-badge" id="syncStatus">Local preservado</span><button class="header-btn" id="settingsBtn" type="button">⚙️ Configurações</button><button class="header-btn" id="logoutBtn" type="button">🚪 Sair</button></div></header>
 <div class="wrap">
 <nav id="nav">
 <button class="active" data-page="painel">Painel</button>
@@ -121,7 +121,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
 <div class="cards"><div class="card"><small>💰 Recebido</small><div class="value" id="fIncome">R$ 0,00</div></div><div class="card"><small>⛽ Combustível</small><div class="value" id="fFuel">R$ 0,00</div></div><div class="card"><small>👨‍✈️ Motoristas pagos</small><div class="value" id="fDrivers">R$ 0,00</div></div><div class="card"><small>🧾 Manutenção + extras</small><div class="value" id="fOther">R$ 0,00</div></div></div>
 <div class="card"><h3>📊 Resultado de caixa: <span id="fResult">R$ 0,00</span></h3><div id="financeCityTable"></div></div>
 </section>
-</main></div>
+</main></div><button class="bottom-help-btn" id="helpBtn" type="button">❓ Ajuda</button>
 
 
 <div class="modal" id="settingsModal"><div class="modal-card">
@@ -158,7 +158,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
 <div class="help-assistant"><div class="help-assistant-head"><b>💬 Assistente do Sistema</b><div style="font-size:12px;opacity:.85">Pergunte qualquer dúvida sobre o Gestão Escolar Frota</div></div><div class="help-assistant-body" id="virtualAssistantBody"><div class="va-msg bot">Olá! Posso explicar como usar o sistema. Pergunte, por exemplo: “Como cadastro um motorista?”, “O que é competência?” ou “Como lançar abastecimento?”.</div></div><form class="va-form" id="virtualAssistantForm"><input id="virtualAssistantInput" autocomplete="off" placeholder="Digite sua dúvida sobre o sistema..."><button class="primary" type="submit">Perguntar</button></form></div>
 <div class="help-search"><input id="helpSearch" placeholder="Digite o nome de qualquer campo ou dúvida..."></div>
 <div id="helpList"></div>
-<div class="card" style="margin-top:12px"><b>Não encontrou?</b><p class="note" style="margin:6px 0 0">Esta central foi ampliada para documentar praticamente todos os campos e funções existentes nesta versão. Ela funciona sem internet. Na versão online, ainda poderemos acrescentar um assistente inteligente para interpretar perguntas livres.</p></div>
+<div class="card" style="margin-top:12px"><b>Não encontrou?</b><p class="note" style="margin:6px 0 0">O manual e o assistente trabalham juntos. Se a resposta não resolver sua dúvida, reformule a pergunta ou informe em qual tela do sistema você está.</p></div>
 </div></div>
 <div class="modal" id="messagesModal"><div class="modal-card">
 <div class="modal-head"><div><h2 style="margin:0">Recados da equipe</h2><p class="note" style="margin-top:4px">Espaço para as duas pessoas deixarem avisos uma para a outra.</p></div><button class="closebtn" id="closeMessages">×</button></div>
@@ -752,13 +752,19 @@ function renderHelp(q=''){
  const items=HELP.filter(x=>!term||(`${x[0]} ${x[1]}`).toLocaleLowerCase('pt-BR').includes(term));
  $('helpList').innerHTML=items.length?items.map((x,i)=>`<div class="help-item"><button type="button" class="help-q" onclick="this.parentElement.classList.toggle('open')">${esc(x[0])}</button><div class="help-a">${esc(x[1])}</div></div>`).join(''):'<div class="empty">Não encontrei essa dúvida no manual desta versão. Tente palavras como motorista, financeiro, histórico, abastecimento, recado ou município.</div>';
 }
+let assistantContext='';
 function assistantAnswer(q){
- const term=(q||'').trim().toLocaleLowerCase('pt-BR');if(!term)return 'Digite uma dúvida sobre o sistema.';
- const stop=new Set(['como','para','que','uma','por','dos','das','com','onde','qual','isso','este','esta','meu','minha']);
- const words=term.replace(/[^a-zà-ú0-9 ]/gi,' ').split(/\s+/).filter(w=>w.length>2&&!stop.has(w));
- let best=null,score=0;
- HELP.forEach(x=>{const title=x[0].toLocaleLowerCase('pt-BR'),hay=(x[0]+' '+x[1]).toLocaleLowerCase('pt-BR');let s=0;words.forEach(w=>{if(title.includes(w))s+=4;else if(hay.includes(w))s+=1});if(title.includes(term))s+=8;if(s>score){score=s;best=x}});
- return best&&score>0?best[0]+': '+best[1]:'Ainda não encontrei essa dúvida no manual. Tente mencionar o módulo ou campo, como motorista, veículo, município, abastecimento, manutenção, financeiro, contrato, documento, histórico ou recados.';
+ const raw=(q||'').trim(),term=raw.toLocaleLowerCase('pt-BR');if(!term)return 'Pode escrever sua dúvida que eu te ajudo.';
+ const stop=new Set(['como','para','que','uma','por','dos','das','com','onde','qual','isso','este','esta','meu','minha','quero','preciso','posso','fazer','faço']);
+ let expanded=term;
+ if(/^(e |e se|e como|isso|esse|essa|tamb[eé]m|depois)/.test(term)&&assistantContext)expanded=assistantContext+' '+term;
+ const words=expanded.replace(/[^a-zà-ú0-9 ]/gi,' ').split(/\s+/).filter(w=>w.length>2&&!stop.has(w));
+ const ranked=HELP.map(x=>{const title=x[0].toLocaleLowerCase('pt-BR'),hay=(x[0]+' '+x[1]).toLocaleLowerCase('pt-BR');let s=0;words.forEach(w=>{if(title.includes(w))s+=5;else if(hay.includes(w))s+=1});if(title.includes(expanded))s+=8;return {x,s}}).filter(o=>o.s>0).sort((a,b)=>b.s-a.s);
+ if(!ranked.length)return 'Entendi a pergunta, mas ainda não tenho essa informação cadastrada no manual do sistema. Tente me dizer em qual área você está — por exemplo: Município, Motorista, Veículo, Abastecimento, Manutenção, Financeiro, Contrato ou Documento.';
+ const best=ranked[0].x;assistantContext=best[0].toLocaleLowerCase('pt-BR');
+ const action=/como|onde|cadastr|lanç|registr|marc|alter|inclu|adicion/.test(term);
+ if(action)return 'Claro. '+best[1]+' Se você me disser o que está aparecendo na sua tela agora, eu continuo te orientando a partir daí.';
+ return 'Sim. Sobre '+best[0].replace(/ — O que é\?/i,'')+': '+best[1]+' Se quiser, pode continuar a pergunta que eu mantenho esse assunto como contexto.';
 }
 function addAssistantMessage(message,who){const b=$('virtualAssistantBody');if(!b)return;const d=document.createElement('div');d.className='va-msg '+who;d.textContent=message;b.appendChild(d);b.scrollTop=b.scrollHeight}
 $('virtualAssistantForm').addEventListener('submit',e=>{e.preventDefault();const i=$('virtualAssistantInput'),q=i.value.trim();if(!q)return;addAssistantMessage(q,'user');i.value='';addAssistantMessage(assistantAnswer(q),'bot');});
