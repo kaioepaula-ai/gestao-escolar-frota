@@ -169,7 +169,7 @@ const AUTH_STORE='gef_online_session';
 function authHeaders(token){return {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(token||SUPABASE_KEY),'Content-Type':'application/json'}}
 function setAuthStatus(msg,bad=false){const e=document.getElementById('authStatus');if(e){e.textContent=msg;e.style.color=bad?'#b42318':'#344054'}}
 let ONLINE_ROLE='unknown', ONLINE_PERMS={};
-const EMPLOYEE_TAB_MODULE={abastecimentos:'fuelings',pecas:'parts_purchases',prefeitura:'service_sales',diego:'service_sales',outros:'service_sales',dias:'work_days',manutencao:'maintenance',documentos:'documents'};
+const EMPLOYEE_TAB_MODULE={abastecimentos:'fuelings',pecas:'parts_purchases',prefeitura:'service_sales_prefeitura',diego:'service_sales_diego',outros:'service_sales_outros',dias:'work_days',manutencao:'maintenance',documentos:'documents'};
 function canEmployee(mod,perm='view'){return ONLINE_ROLE!=='employee'||!!ONLINE_PERMS[mod]?.[perm]}
 function applyEmployeePermissions(){
  if(ONLINE_ROLE!=='employee')return;
@@ -348,7 +348,7 @@ async function loadEmployees(){
   box.innerHTML=employees.map(u=>{
    const mids=u.municipalities||[], ps=u.permissions||[];
    const cityChecks=cities.map(c=>`<label style="display:inline-block;margin:4px 12px 4px 0"><input type="checkbox" class="ep-city" data-u="${u.id}" value="${c.id}" ${mids.includes(c.id)?'checked':''}> ${esc(c.name)}</label>`).join('');
-   const mods=[['fuelings','Abastecimentos'],['parts_purchases','Casa de Peças'],['service_sales','Prefeitura / Diego / Outros Serviços'],['work_days','Dias trabalhados'],['km','KM'],['maintenance','Manutenção'],['documents','Documentos']];
+   const mods=[['fuelings','Abastecimentos'],['parts_purchases','Casa de Peças'],['service_sales_prefeitura','Prefeitura'],['service_sales_diego','Diego'],['service_sales_outros','Outros Serviços'],['work_days','Dias trabalhados'],['km','KM'],['maintenance','Manutenção'],['documents','Documentos']];
    const modChecks=mods.map(([m,n])=>`<label style="display:inline-block;margin:4px 12px 4px 0"><input type="checkbox" class="ep-mod" data-u="${u.id}" value="${m}" ${ps.some(p=>p.module===m&&p.can_view)?'checked':''}> ${n}</label>`).join('');
    return `<div class="card" style="margin:10px 0"><b>${esc(u.profile?.full_name||u.email||'Funcionário')}</b><div class="note">${esc(u.email||'')}</div><p><b>Municípios:</b><br>${cityChecks||'<span class="note">Não há municípios ativos no banco online.</span>'}</p><p><b>Módulos:</b><br>${modChecks}</p><button type="button" onclick="saveEmployeePermissions('${u.id}')">Salvar permissões</button></div>`;
   }).join('');
