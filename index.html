@@ -36,7 +36,8 @@ table{width:100%;border-collapse:collapse;background:#fff;margin-top:12px;font-s
 body.employee-mode #settingsBtn,
 body.employee-mode #nav button:not([data-page="municipios"]),
 body.employee-mode #cityForm,
-body.employee-mode .historybar{display:none!important}
+body.employee-mode .historybar,
+body.employee-mode #cityArea>.cards{display:none!important}
 body.employee-mode .subtab.employee-denied,body.employee-mode .subpage.employee-denied{display:none!important}
 body.employee-mode #syncBtn{display:inline-block!important}
 .alert-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.alert-item{border:1px solid var(--line);border-left:5px solid #f79009;border-radius:8px;padding:10px;background:#fff}.alert-item.danger{border-left-color:#d92d20;background:#fff5f5}.alert-item.ok{border-left-color:#12b76a}.receipt-thumb{max-width:90px;max-height:70px;border-radius:6px;border:1px solid var(--line)}@media(max-width:900px){.alert-grid{grid-template-columns:1fr}}
@@ -512,7 +513,7 @@ function renderMunicipios(){
  const fuel=db.fuel.filter(x=>vids.has(x.vehicleId)&&(!hm||monthOf(x.date)===hm)),att=db.attendance.filter(x=>rids.has(x.routeId)&&(!hm||x.month===hm)),maint=db.maintenance.filter(x=>vids.has(x.vehicleId)&&(!hm||monthOf(x.date)===hm));
  const docs=db.documents.filter(x=>(x.ownerType==='Motorista'?dids:vids).has(x.ownerId)),rec=db.receivables.filter(x=>rids.has(x.routeId)&&(!hm||x.month===hm)),exp=db.expenses.filter(x=>(rids.has(x.routeId)||vids.has(x.vehicleId))&&(!hm||monthOf(x.date)===hm));
  const m=metrics(selectedCity,hm), pending=rec.filter(x=>x.status!=='Pago').reduce((s,x)=>s+(+x.value||0),0);
- const ro=options(routes,r=>`${r.contract} — ${r.route}`),vo=options(vehicles,v=>`${v.plate} — ${v.model}`),do_=options(drivers,d=>d.name);
+ const ro=options(routes,r=>ONLINE_ROLE==='employee'?r.route:`${r.contract} — ${r.route}`),vo=options(vehicles,v=>`${v.plate} — ${v.model}`),do_=options(drivers,d=>d.name);
  $('cityArea').innerHTML=`
  <div class="cards"><div class="card"><small>Receita</small><div class="value">${money(m.income)}</div></div><div class="card"><small>Despesas</small><div class="value">${money(m.fuel+m.drivers+m.other)}</div></div><div class="card"><small>Resultado</small><div class="value">${money(m.result)}</div></div><div class="card"><small>A receber</small><div class="value">${money(pending)}</div></div></div>
  <div class="subtabs">
@@ -558,6 +559,7 @@ function renderMonthlyHistory(){
 }
 
 function render(){
+ if(ONLINE_ROLE==='employee'){renderMunicipios();applyEmployeePermissions();return}
  const hm=histMonth();if($('historyLabel'))$('historyLabel').textContent=hm?`Exibindo histórico completo: ${hm.slice(5,7)}/${hm.slice(0,4)}`:'Todos os períodos';renderMonthlyHistory();
  const cities=allCities(),cityOpts='<option value="">Selecione</option>'+cities.map(c=>`<option>${esc(c)}</option>`).join('');
  $('rCity').innerHTML=cityOpts;
