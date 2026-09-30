@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17233b">
-<title>Gestão Escolar Frota V5.5</title>
+<title>Gestão Escolar Frota V6.0</title>
 <style>
 :root{--bg:#f5f7fb;--nav:#17233b;--card:#fff;--line:#dfe5ee;--text:#1d2939;--muted:#667085;--accent:#2563eb;--ok:#027a48;--warn:#b54708;--danger:#b42318}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -41,6 +41,12 @@ body.employee-mode .subtab:not([data-sub="abastecimentos"]){display:none!importa
 body.employee-mode .subpage:not(#sub_abastecimentos){display:none!important}
 body.employee-mode #sub_abastecimentos{display:block!important}
 body.employee-mode #syncBtn{display:inline-block!important}
+.alert-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.alert-item{border:1px solid var(--line);border-left:5px solid #f79009;border-radius:8px;padding:10px;background:#fff}.alert-item.danger{border-left-color:#d92d20;background:#fff5f5}.alert-item.ok{border-left-color:#12b76a}.receipt-thumb{max-width:90px;max-height:70px;border-radius:6px;border:1px solid var(--line)}@media(max-width:900px){.alert-grid{grid-template-columns:1fr}}
+
+.dashboard-hero{background:linear-gradient(135deg,#17233b,#294d86);color:#fff;border-radius:18px;padding:22px;margin-bottom:16px;box-shadow:0 12px 32px rgba(23,35,59,.16)}
+.dashboard-hero h2{margin:0 0 6px;font-size:25px}.dashboard-hero p{margin:0;color:#dbe7ff}.card{box-shadow:0 3px 14px rgba(16,24,40,.04);transition:transform .15s ease,box-shadow .15s ease}.card:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(16,24,40,.08)}
+.cards .card{position:relative;overflow:hidden}.cards .card:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#2563eb}.value{letter-spacing:-.4px}.page h2{letter-spacing:-.4px}nav button{transition:.15s ease}.badge{font-weight:700}.empty{background:#fbfcfe}
+@media(max-width:560px){.dashboard-hero{padding:18px;border-radius:14px}.dashboard-hero h2{font-size:21px}.header-right{gap:5px}.header-btn{padding:8px 9px}}
 </style>
 
 <style>
@@ -57,26 +63,27 @@ body.employee-mode #syncBtn{display:inline-block!important}
  </div>
 </div>
 
-<header><h1>Gestão Escolar Frota</h1><div class="header-right"><span class="user-badge" id="onlineUser">V5.5 • Online</span><button class="header-btn" id="helpBtn">❓ Ajuda</button><button class="header-btn" id="messagesBtn">💬 Recados <span class="msg-count" id="msgCount">0</span></button><button class="header-btn" id="syncBtn" type="button">☁ Enviar</button><button class="header-btn" id="cloudLoadBtn" type="button">↻ Atualizar online</button><span class="user-badge" id="syncStatus">Local preservado</span><button class="header-btn" id="settingsBtn" type="button">⚙️ Configurações</button><button class="header-btn" id="logoutBtn" type="button">🚪 Sair</button></div></header>
+<header><h1>Gestão Escolar Frota</h1><div class="header-right"><span class="user-badge" id="onlineUser">V6.0 • Online</span><button class="header-btn" id="helpBtn">❓ Ajuda</button><button class="header-btn" id="messagesBtn">💬 Recados <span class="msg-count" id="msgCount">0</span></button><button class="header-btn" id="syncBtn" type="button">☁ Enviar</button><button class="header-btn" id="cloudLoadBtn" type="button">↻ Atualizar online</button><span class="user-badge" id="syncStatus">Local preservado</span><button class="header-btn" id="settingsBtn" type="button">⚙️ Configurações</button><button class="header-btn" id="logoutBtn" type="button">🚪 Sair</button></div></header>
 <div class="wrap">
 <nav id="nav">
 <button class="active" data-page="painel">Painel</button>
 <button data-page="municipios">Municípios</button>
 <button data-page="contratos">Contratos</button>
-<button data-page="receber">Contas a receber</button>
+<button data-page="receber">Faturamentos</button>
 <button data-page="financeiro">Financeiro</button>
 </nav>
 <main>
 <div class="historybar"><label>Histórico por mês<input id="historyMonth" type="month"></label><button class="secondary" id="historyCurrent" type="button">Mês atual</button><span class="history-tag" id="historyLabel">Todos os períodos</span></div>
-<section id="painel" class="page active">
+<section id="painel" class="page active"><div class="dashboard-hero"><h2>🚐 Visão geral da operação</h2><p>Financeiro, frota e pendências importantes em um só lugar.</p></div>
 <h2>Painel Geral</h2><p class="note">Resumo consolidado de todos os municípios.</p>
 <div class="cards">
-<div class="card"><small>Entradas gerais</small><div class="value" id="pIncome">R$ 0,00</div></div>
-<div class="card"><small>Despesas gerais</small><div class="value" id="pCosts">R$ 0,00</div></div>
-<div class="card"><small>Resultado geral</small><div class="value" id="pResult">R$ 0,00</div></div>
-<div class="card"><small>Total a receber</small><div class="value" id="pReceivable">R$ 0,00</div></div>
+<div class="card"><small>🧾 Faturado líquido</small><div class="value" id="pBilled">R$ 0,00</div></div>
+<div class="card"><small>💰 Recebido</small><div class="value" id="pIncome">R$ 0,00</div></div>
+<div class="card"><small>⏳ A receber</small><div class="value" id="pReceivable">R$ 0,00</div></div>
+<div class="card"><small>💸 Despesas totais</small><div class="value" id="pCosts">R$ 0,00</div></div>
+<div class="card"><small>📊 Resultado de caixa</small><div class="value" id="pResult">R$ 0,00</div></div>
 </div>
-<div class="charts"><div class="card"><h3>Resultado geral</h3><div class="chartbox"><canvas id="generalChart"></canvas></div></div><div class="card"><h3>Resultado por município</h3><div id="citySummary"></div></div></div>
+<div class="card" style="margin-bottom:14px"><h3>⚠️ Alertas da Frota</h3><p class="note">Manutenções e documentos próximos do vencimento. Vermelho = vencido/urgente; amarelo = atenção.</p><div id="fleetAlerts"></div></div><div class="charts"><div class="card"><h3>Resultado geral</h3><div class="chartbox"><canvas id="generalChart"></canvas></div></div><div class="card"><h3>Resultado por município</h3><div id="citySummary"></div></div></div>
 <div class="card" style="margin-top:14px"><h3>Histórico completo do período</h3><p class="note">Quando um mês é selecionado, aparecem aqui os lançamentos daquele mês em todas as categorias.</p><div id="monthlyHistory"></div></div>
 </section>
 
@@ -97,16 +104,16 @@ body.employee-mode #syncBtn{display:inline-block!important}
 </section>
 
 <section id="receber" class="page">
-<h2>Contas a receber</h2><p class="note">Visão consolidada das contas de todos os municípios.</p>
+<h2>Faturamentos</h2><p class="note">Visão consolidada das contas de todos os municípios.</p>
 <div id="receivablesTable"></div>
 </section>
 
 <section id="financeiro" class="page">
-<h2>Financeiro Geral</h2><p class="note">Soma automática das entradas e despesas de todos os municípios.</p>
+<h2>Financeiro Geral</h2><p class="note">Visão de caixa: somente valores efetivamente recebidos entram como receita.</p>
 <div class="report-actions"><button class="secondary" id="exportCSV">Exportar Excel (CSV)</button><button class="secondary" id="printBtn">Gerar PDF / Imprimir</button></div>
 <div class="filters"><div class="toolbar"><label>Competência<input id="finMonth" type="month"></label><label>Município<select id="finCity"><option value="">Todos</option></select></label><button class="secondary" id="clearFin" type="button">Limpar filtros</button></div></div>
-<div class="cards"><div class="card"><small>Entradas</small><div class="value" id="fIncome">R$ 0,00</div></div><div class="card"><small>Combustível</small><div class="value" id="fFuel">R$ 0,00</div></div><div class="card"><small>Motoristas</small><div class="value" id="fDrivers">R$ 0,00</div></div><div class="card"><small>Outras despesas</small><div class="value" id="fOther">R$ 0,00</div></div></div>
-<div class="card"><h3>Resultado operacional: <span id="fResult">R$ 0,00</span></h3><div id="financeCityTable"></div></div>
+<div class="cards"><div class="card"><small>💰 Recebido</small><div class="value" id="fIncome">R$ 0,00</div></div><div class="card"><small>⛽ Combustível</small><div class="value" id="fFuel">R$ 0,00</div></div><div class="card"><small>👨‍✈️ Motoristas pagos</small><div class="value" id="fDrivers">R$ 0,00</div></div><div class="card"><small>🧾 Manutenção + extras</small><div class="value" id="fOther">R$ 0,00</div></div></div>
+<div class="card"><h3>📊 Resultado de caixa: <span id="fResult">R$ 0,00</span></h3><div id="financeCityTable"></div></div>
 </section>
 </main></div>
 
@@ -185,6 +192,12 @@ async function signupOnline(){try{setAuthStatus('Criando acesso...');const email
 function currentSession(){try{return JSON.parse(localStorage.getItem(AUTH_STORE)||'null')}catch(e){return null}}
 async function api(path,opts={}){const s=currentSession();if(!s?.access_token)throw new Error('Sessão expirada. Entre novamente.');const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...opts,headers:{...authHeaders(s.access_token),'Prefer':'return=representation',...(opts.headers||{})}});const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){j=txt}if(!r.ok)throw new Error((j&&j.message)||('Erro online '+r.status));return j}
 function syncMsg(t,bad=false){const e=$('syncStatus');if(e){e.textContent=t;e.style.background=bad?'#7f1d1d':'#ffffff22'}}
+
+async function uploadFuelReceipt(f){if(!f?.receiptFile)return f?.receiptUrl||'';const sess=currentSession();const ext=(f.receiptFile.name.split('.').pop()||'jpg').replace(/[^a-zA-Z0-9]/g,'');const path=`${sess.user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;const r=await fetch(SUPABASE_URL+'/storage/v1/object/fuel-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':f.receiptFile.type||'image/jpeg','x-upsert':'false'},body:f.receiptFile});if(!r.ok){const t=await r.text();throw new Error('Falha ao enviar comprovante: '+t)}f.receiptFile=null;return path}
+async function signedFuelReceiptUrl(path){if(!path)return'';if(/^https?:\/\//i.test(path))return path;const sess=currentSession();const r=await fetch(SUPABASE_URL+'/storage/v1/object/sign/fuel-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:300})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||'Não foi possível abrir o comprovante.');return SUPABASE_URL+'/storage/v1'+(j.signedURL||j.signedUrl||'')}
+window.viewFuelReceipt=async path=>{try{const u=await signedFuelReceiptUrl(path);if(u)window.open(u,'_blank')}catch(e){alert(e.message)}}
+window.attachFuelReceipt=id=>{const f=db.fuel.find(x=>x.id===id);if(!f)return;const input=document.createElement('input');input.type='file';input.accept='.jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf';input.onchange=async()=>{const file=input.files?.[0];if(!file)return;try{f.receiptFile=file;syncMsg('Enviando comprovante...');f.receiptUrl=await uploadFuelReceipt(f);save();syncMsg('✓ Comprovante salvo online; clique em Enviar para vincular ao lançamento.')}catch(e){f.receiptFile=null;syncMsg('Falha no comprovante',true);alert(e.message)}};input.click()}
+
 async function syncEmployeeFuelings(){
  try{
   syncMsg('Enviando abastecimentos...');
@@ -200,7 +213,7 @@ async function syncEmployeeFuelings(){
     municipality_id:mid, vehicle_id:v.id,
     fueled_at:(f.date||new Date().toISOString().slice(0,10))+'T12:00:00',
     station:f.station||'', liters:+f.liters||0, total_amount:+f.total||0,
-    km:+f.km||0, notes:f.notes||'', created_by:currentSession().user.id
+    km:+f.km||0, notes:f.notes||'', receipt_photo_url:(f.receiptUrl=await uploadFuelReceipt(f))||null, created_by:currentSession().user.id
    })});
   }
   syncMsg('✓ Enviado');
@@ -211,32 +224,59 @@ async function syncEmployeeFuelings(){
 async function syncCoreOnline(){
  if(ONLINE_ROLE==='employee') return syncEmployeeFuelings();
  try{
-  syncMsg('Sincronizando...');
-  const cityMap={};
+  syncMsg('Sincronizando todos os módulos...');
+  const isUuid=x=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x||'');
+  const comp=m=>(m&&m.length>=7?m.slice(0,7):nowMonth())+'-01';
+  const cityMap={},vehicleMap={},driverMap={},routeMap={};
   for(const name of allCities()){
-   let found=await api('municipalities?select=id,name&name=eq.'+encodeURIComponent(name));
-   let row=found?.[0];
-   if(!row){const made=await api('municipalities',{method:'POST',body:JSON.stringify({name,active:true})});row=made?.[0]}
+   let rows=await api('municipalities?select=id,name&name=eq.'+encodeURIComponent(name)), row=rows?.[0];
+   if(!row) row=(await api('municipalities',{method:'POST',body:JSON.stringify({name,active:true})}))?.[0];
    if(row)cityMap[name]=row.id;
   }
-  const vehicleMap={};
   for(const v of db.vehicles){
-   const mid=cityMap[v.city]; if(!mid)continue;
-   let found=await api('vehicles?select=id,plate&municipality_id=eq.'+mid+'&plate=eq.'+encodeURIComponent(v.plate));
-   let row=found?.[0];
-   if(!row){const made=await api('vehicles',{method:'POST',body:JSON.stringify({municipality_id:mid,plate:v.plate||'',model:v.model||'',current_km:+v.km||0,active:true})});row=made?.[0]}
+   const mid=cityMap[v.city];if(!mid)continue;let row;
+   const payload={municipality_id:mid,plate:v.plate||'',model:v.model||'',year:v.year||null,current_km:+v.km||0,crlv_expiry:v.crlvExpiry||null,active:v.active!==false};
+   if(isUuid(v.id)){row=(await api('vehicles?id=eq.'+v.id,{method:'PATCH',body:JSON.stringify(payload)}))?.[0]}
+   else {row=(await api('vehicles?select=*&municipality_id=eq.'+mid+'&plate=eq.'+encodeURIComponent(v.plate||'')))?.[0];if(row)row=(await api('vehicles?id=eq.'+row.id,{method:'PATCH',body:JSON.stringify(payload)}))?.[0];else row=(await api('vehicles',{method:'POST',body:JSON.stringify(payload)}))?.[0]}
    if(row)vehicleMap[v.id]=row.id;
   }
-  for(const f of db.fuel){
-   const vid=vehicleMap[f.vehicleId]; if(!vid)continue;
-   const v=db.vehicles.find(x=>x.id===f.vehicleId),mid=v&&cityMap[v.city]; if(!mid)continue;
-   const marker=[f.date||'',f.station||'',+f.total||0,+f.km||0].join('|');
-   let existing=await api('fuelings?select=id,notes&vehicle_id=eq.'+vid+'&notes=eq.'+encodeURIComponent('IMPORT:'+marker));
-   if(existing?.length)continue;
-   await api('fuelings',{method:'POST',body:JSON.stringify({municipality_id:mid,vehicle_id:vid,fueled_at:(f.date||new Date().toISOString().slice(0,10))+'T12:00:00',station:f.station||'',liters:+f.liters||0,total_amount:+f.total||0,km:+f.km||0,notes:'IMPORT:'+marker,created_by:currentSession().user.id})});
+  for(const d of db.drivers){
+   const mid=cityMap[d.city];if(!mid)continue;let row;
+   const payload={municipality_id:mid,name:d.name||'',cnh:d.cnh||'',monthly_value:+d.value||0,bank:d.bank||'',agency:d.agency||'',account:d.account||'',operation:d.operation||'',active:d.active!==false};
+   if(isUuid(d.id))row=(await api('drivers?id=eq.'+d.id,{method:'PATCH',body:JSON.stringify(payload)}))?.[0];
+   else {let q='drivers?select=*&municipality_id=eq.'+mid+'&name=eq.'+encodeURIComponent(d.name||'');if(d.cnh)q+='&cnh=eq.'+encodeURIComponent(d.cnh);row=(await api(q))?.[0];if(row)row=(await api('drivers?id=eq.'+row.id,{method:'PATCH',body:JSON.stringify(payload)}))?.[0];else row=(await api('drivers',{method:'POST',body:JSON.stringify(payload)}))?.[0]}
+   if(row)driverMap[d.id]=row.id;
   }
-  syncMsg('✓ Sincronizado'); alert('Sincronização concluída: municípios, veículos e abastecimentos foram enviados para a base online. Os dados locais foram preservados.');
- }catch(e){console.error(e);syncMsg('Falha na sincronização',true);alert('Não foi possível sincronizar agora: '+e.message+'\n\nSe aparecer erro de permissão, a base local continua preservada.');}
+  for(const r of db.routes){
+   const mid=cityMap[r.city];if(!mid)continue;let row;
+   const payload={municipality_id:mid,name:r.route||'',contract_number:r.contract||'',monthly_revenue:+(r.income??r.monthly)||0,competence:r.month?comp(r.month):null,active:r.status!=='Inativo'&&r.active!==false};
+   if(isUuid(r.id))row=(await api('routes?id=eq.'+r.id,{method:'PATCH',body:JSON.stringify(payload)}))?.[0];
+   else {row=(await api('routes?select=*&municipality_id=eq.'+mid+'&name=eq.'+encodeURIComponent(r.route||'')))?.[0];if(row)row=(await api('routes?id=eq.'+row.id,{method:'PATCH',body:JSON.stringify(payload)}))?.[0];else row=(await api('routes',{method:'POST',body:JSON.stringify(payload)}))?.[0]}
+   if(row)routeMap[r.id]=row.id;
+  }
+  for(const l of db.links){
+   const rid=routeMap[l.routeId]||l.routeId,vid=vehicleMap[l.vehicleId]||l.vehicleId,did=driverMap[l.driverId]||l.driverId,r=db.routes.find(x=>x.id===l.routeId),mid=r&&cityMap[r.city];if(!mid||!rid)continue;
+   const payload={municipality_id:mid,route_id:rid||null,vehicle_id:vid||null,driver_id:did||null,competence:comp(l.month||l.start)};
+   if(isUuid(l.id))await api('assignments?id=eq.'+l.id,{method:'PATCH',body:JSON.stringify(payload)});else {const ex=await api('assignments?select=id&route_id=eq.'+rid+'&competence=eq.'+payload.competence);if(ex?.[0])await api('assignments?id=eq.'+ex[0].id,{method:'PATCH',body:JSON.stringify(payload)});else await api('assignments',{method:'POST',body:JSON.stringify(payload)})}
+  }
+  for(const f of db.fuel){
+   const vid=vehicleMap[f.vehicleId]||f.vehicleId,v=db.vehicles.find(x=>x.id===f.vehicleId),mid=v&&cityMap[v.city];if(!mid||!vid)continue;
+   if(f.receiptFile)f.receiptUrl=await uploadFuelReceipt(f);
+   const payload={municipality_id:mid,vehicle_id:vid,fueled_at:(f.date||new Date().toISOString().slice(0,10))+'T12:00:00',station:f.station||'',liters:+f.liters||0,total_amount:+f.total||0,km:+f.km||0,notes:f.notes||'',receipt_photo_url:f.receiptUrl||null,created_by:currentSession().user.id};
+   if(isUuid(f.id))await api('fuelings?id=eq.'+f.id,{method:'PATCH',body:JSON.stringify(payload)});else {const marker=[f.date||'',f.station||'',+f.total||0,+f.km||0].join('|');const ex=await api('fuelings?select=id&vehicle_id=eq.'+vid+'&notes=eq.'+encodeURIComponent('IMPORT:'+marker));payload.notes='IMPORT:'+marker;if(ex?.[0])await api('fuelings?id=eq.'+ex[0].id,{method:'PATCH',body:JSON.stringify(payload)});else await api('fuelings',{method:'POST',body:JSON.stringify(payload)})}
+  }
+  for(const a of db.attendance){
+   if(!a.month)continue;const rid=routeMap[a.routeId]||a.routeId,r=db.routes.find(x=>x.id===a.routeId),mid=r&&cityMap[r.city];if(!mid||!rid)continue;
+   const payload={municipality_id:mid,route_id:rid,driver_id:null,work_date:comp(a.month),status:'summary',notes:JSON.stringify({planned:+a.planned||0,worked:+a.worked||0,obs:a.obs||''}),created_by:currentSession().user.id};
+   if(isUuid(a.id))await api('work_days?id=eq.'+a.id,{method:'PATCH',body:JSON.stringify(payload)});else {const ex=await api('work_days?select=id&route_id=eq.'+rid+'&work_date=eq.'+payload.work_date+'&status=eq.summary');if(ex?.[0])await api('work_days?id=eq.'+ex[0].id,{method:'PATCH',body:JSON.stringify(payload)});else await api('work_days',{method:'POST',body:JSON.stringify(payload)})}
+  }
+  for(const m of db.maintenance){const vid=vehicleMap[m.vehicleId]||m.vehicleId,v=db.vehicles.find(x=>x.id===m.vehicleId),mid=v&&cityMap[v.city];if(!mid||!vid)continue;const payload={municipality_id:mid,vehicle_id:vid,service_date:m.date||new Date().toISOString().slice(0,10),description:m.service||'',amount:+m.value||0,km:+m.km||0,next_km:+m.nextKm||null,next_date:m.nextDate||null,notes:m.notes||'',created_by:currentSession().user.id};if(isUuid(m.id))await api('maintenance?id=eq.'+m.id,{method:'PATCH',body:JSON.stringify(payload)});else await api('maintenance',{method:'POST',body:JSON.stringify(payload)})}
+  for(const e of db.expenses){const vid=e.vehicleId?(vehicleMap[e.vehicleId]||e.vehicleId):null,rid=e.routeId?(routeMap[e.routeId]||e.routeId):null;let mid=null;if(vid){const v=db.vehicles.find(x=>x.id===e.vehicleId);mid=v&&cityMap[v.city]}if(!mid&&rid){const r=db.routes.find(x=>x.id===e.routeId);mid=r&&cityMap[r.city]}if(!mid)mid=cityMap[selectedCity]||Object.values(cityMap)[0];if(!mid)continue;const payload={municipality_id:mid,expense_date:e.date||new Date().toISOString().slice(0,10),category:e.typeName||'Extra',description:e.typeName||'',amount:+e.value||0,vehicle_id:vid,route_id:rid,created_by:currentSession().user.id};if(isUuid(e.id))await api('expenses?id=eq.'+e.id,{method:'PATCH',body:JSON.stringify(payload)});else await api('expenses',{method:'POST',body:JSON.stringify(payload)})}
+  for(const x of db.receivables){const rid=routeMap[x.routeId]||x.routeId,r=db.routes.find(q=>q.id===x.routeId),mid=r&&cityMap[r.city];if(!mid||!rid)continue;const paid=x.status==='Pago'||x.status==='received';const payload={municipality_id:mid,route_id:rid,competence:comp(x.month),description:'Faturamento '+(x.invoice||''),invoice_number:x.invoice||null,gross_amount:+(x.gross??x.value)||0,retention_percent:+x.percent||0,retained_amount:+x.retained||0,net_amount:+(x.net??x.value)||0,amount:+(x.net??x.value)||0,due_date:x.due||null,received_at:paid?(x.receivedAt||new Date().toISOString().slice(0,10)):null,status:paid?'received':(x.status==='Cancelado'?'cancelled':'pending')};if(isUuid(x.id))await api('receivables?id=eq.'+x.id,{method:'PATCH',body:JSON.stringify(payload)});else await api('receivables',{method:'POST',body:JSON.stringify(payload)})}
+  for(const p of db.driverPayments){const did=driverMap[p.driverId]||p.driverId,d=db.drivers.find(x=>x.id===p.driverId),mid=d&&cityMap[d.city];if(!mid||!did)continue;const payload={municipality_id:mid,driver_id:did,competence:comp(p.month),amount:+p.value||0,paid_at:p.paidAt?String(p.paidAt).slice(0,10):new Date().toISOString().slice(0,10),created_by:currentSession().user.id};if(isUuid(p.id))await api('driver_payments?id=eq.'+p.id,{method:'PATCH',body:JSON.stringify(payload)});else await api('driver_payments',{method:'POST',body:JSON.stringify(payload)})}
+  for(const d of db.documents){const isDriver=d.ownerType==='Motorista',oid=isDriver?(driverMap[d.ownerId]||d.ownerId):(vehicleMap[d.ownerId]||d.ownerId),owner=isDriver?db.drivers.find(x=>x.id===d.ownerId):db.vehicles.find(x=>x.id===d.ownerId),mid=owner&&cityMap[owner.city];if(!mid)continue;const payload={municipality_id:mid,owner_type:isDriver?'driver':'vehicle',owner_id:oid||null,title:d.name||'',document_type:d.name||'',expiry_date:d.expiry||null,file_url:d.fileUrl||null,notes:d.obs||''};if(isUuid(d.id))await api('documents?id=eq.'+d.id,{method:'PATCH',body:JSON.stringify(payload)});else await api('documents',{method:'POST',body:JSON.stringify(payload)})}
+  syncMsg('✓ Todos os módulos sincronizados');await loadCoreOnline();alert('Sincronização concluída. A base online agora é a fonte principal dos dados.');
+ }catch(e){console.error(e);syncMsg('Falha na sincronização',true);alert('Não foi possível sincronizar: '+e.message+'\n\nOs dados locais foram preservados.');}
 }
 function logoutOnline(){localStorage.removeItem(AUTH_STORE);showLogin();document.getElementById('authPassword').value=''}
 
@@ -297,45 +337,34 @@ async function loadCoreOnline(){
  const status=document.getElementById('syncStatus');
  try{
   status.textContent='☁ Baixando...';
-  const [cities,vehicles,fuelings]=await Promise.all([
-   api('municipalities?select=*&order=name'),
-   api('vehicles?select=*&order=created_at'),
-   api('fuelings?select=*&order=fueled_at.desc')
+  const [cities,vehicles,drivers,routes,assignments,fuelings,workDays,maintenance,expenses,receivables,driverPayments,documents,messages]=await Promise.all([
+   api('municipalities?select=*&order=name'),api('vehicles?select=*&order=created_at'),api('drivers?select=*&order=created_at'),
+   api('routes?select=*&order=created_at'),api('assignments?select=*&order=created_at'),api('fuelings?select=*&order=fueled_at.desc'),
+   api('work_days?select=*&order=work_date.desc'),api('maintenance?select=*&order=service_date.desc'),api('expenses?select=*&order=expense_date.desc'),
+   api('receivables?select=*&order=competence.desc'),api('driver_payments?select=*&order=competence.desc'),api('documents?select=*&order=created_at.desc'),
+   api('messages?select=*&order=sent_at.desc')
   ]);
   const cityById=Object.fromEntries((cities||[]).map(c=>[c.id,c.name]));
-  let local;
-  if(ONLINE_ROLE==='employee'){
-    // Funcionário recebe uma área de trabalho limpa, somente com dados permitidos pelo servidor.
-    local=structuredClone(blank);
-  }else{
-    local=load();
-  }
+  const local=structuredClone(blank);
   local.cities=(cities||[]).map(x=>({id:x.id,name:x.name,active:x.active!==false}));
-  local.vehicles=(vehicles||[]).map(x=>({
-    id:x.id, city:cityById[x.municipality_id]||'', plate:x.plate||'',
-    model:x.model||'', year:x.year||'', km:x.current_km??0, active:x.active!==false
-  }));
-  local.fuel=(fuelings||[]).map(x=>({
-    id:x.id, vehicleId:x.vehicle_id, date:(x.fueled_at||'').slice(0,10),
-    station:x.station||'', liters:Number(x.liters||0), total:Number(x.total_amount||0),
-    km:x.km??0, notes:x.notes||'', pending:false
-  }));
+  local.vehicles=(vehicles||[]).map(x=>({id:x.id,city:cityById[x.municipality_id]||'',plate:x.plate||'',model:x.model||'',year:x.year||'',km:Number(x.current_km||0),crlvExpiry:x.crlv_expiry||'',active:x.active!==false}));
+  local.drivers=(drivers||[]).map(x=>({id:x.id,city:cityById[x.municipality_id]||'',name:x.name||'',cnh:x.cnh||'',value:Number(x.monthly_value||0),bank:x.bank||'',agency:x.agency||'',account:x.account||'',operation:x.operation||'',active:x.active!==false}));
+  local.routes=(routes||[]).map(x=>({id:x.id,city:cityById[x.municipality_id]||'',route:x.name||'',contract:x.contract_number||'',income:Number(x.monthly_revenue||0),monthly:Number(x.monthly_revenue||0),month:(x.competence||'').slice(0,7),status:x.active===false?'Inativo':'Ativo',active:x.active!==false}));
+  local.links=(assignments||[]).map(x=>({id:x.id,routeId:x.route_id,vehicleId:x.vehicle_id,driverId:x.driver_id,month:(x.competence||'').slice(0,7)}));
+  local.fuel=(fuelings||[]).map(x=>({id:x.id,vehicleId:x.vehicle_id,date:(x.fueled_at||'').slice(0,10),station:x.station||'',liters:Number(x.liters||0),total:Number(x.total_amount||0),km:Number(x.km||0),notes:x.notes||'',receiptUrl:x.receipt_photo_url||'',pending:false}));
+  local.attendance=(workDays||[]).map(x=>{if(x.status==='summary'){let j={};try{j=JSON.parse(x.notes||'{}')}catch(e){}return{id:x.id,routeId:x.route_id,month:(x.work_date||'').slice(0,7),planned:Number(j.planned||0),worked:Number(j.worked||0),obs:j.obs||''}}return{id:x.id,driverId:x.driver_id,routeId:x.route_id,date:x.work_date||'',worked:(x.status||'worked')!=='absent',notes:x.notes||''}});
+  local.maintenance=(maintenance||[]).map(x=>({id:x.id,vehicleId:x.vehicle_id,service:x.description||'',value:Number(x.amount||0),date:x.service_date||'',km:Number(x.km||0),nextKm:Number(x.next_km||0),nextDate:x.next_date||'',notes:x.notes||''}));
+  local.expenses=(expenses||[]).map(x=>({id:x.id,date:x.expense_date||'',typeName:x.description||x.category||'',value:Number(x.amount||0),vehicleId:x.vehicle_id||'',routeId:x.route_id||''}));
+  local.receivables=(receivables||[]).map(x=>({id:x.id,routeId:x.route_id||'',month:(x.competence||'').slice(0,7),invoice:x.invoice_number||'',gross:Number(x.gross_amount||x.amount||0),percent:Number(x.retention_percent||0),retained:Number(x.retained_amount||0),net:Number(x.net_amount||x.amount||0),value:Number(x.net_amount||x.amount||0),due:x.due_date||'',receivedAt:x.received_at||'',status:x.status==='received'?'Pago':(x.status==='cancelled'?'Cancelado':'Pendente')}));
+  local.driverPayments=(driverPayments||[]).map(x=>({id:x.id,driverId:x.driver_id,month:(x.competence||'').slice(0,7),value:Number(x.amount||0),paidAt:x.paid_at||''}));
+  local.documents=(documents||[]).map(x=>({id:x.id,ownerType:x.owner_type==='driver'?'Motorista':'Veículo',ownerId:x.owner_id||'',name:x.title||x.document_type||'',expiry:x.expiry_date||'',obs:x.notes||'',fileUrl:x.file_url||''}));
+  local.messages=(messages||[]).map(x=>({id:x.id,text:x.body||'',createdAt:x.sent_at||'',read:x.read_at?true:false}));
   db=local;
   if(ONLINE_ROLE!=='employee') save(local);
   status.textContent='☁ Online atualizado';
-  if(ONLINE_ROLE==='employee'){
-    selectedCity=allCities()[0]||'';
-    activeSub='abastecimentos';
-    document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page==='municipios'));
-    document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='municipios'));
-  }
-  render();
-  return true;
- }catch(e){
-  console.error(e);
-  status.textContent='⚠ Falha ao atualizar';
-  return false;
- }
+  if(ONLINE_ROLE==='employee'){selectedCity=allCities()[0]||'';activeSub='abastecimentos';document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page==='municipios'));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='municipios'));}
+  render(); return true;
+ }catch(e){console.error(e);status.textContent='⚠ Falha ao atualizar';alert('Falha ao baixar a base online: '+e.message);return false;}
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
@@ -380,12 +409,15 @@ function metrics(city='',month=''){
  const routes=db.routes.filter(r=>(!city||r.city===city)&&(!month||r.month===month)), rids=new Set(routes.map(r=>r.id));
  const links=db.links.filter(l=>rids.has(l.routeId)), vids=new Set(links.map(l=>l.vehicleId)), dids=new Set(links.map(l=>l.driverId));
  if(city){db.vehicles.filter(v=>v.city===city).forEach(v=>vids.add(v.id));db.drivers.filter(d=>d.city===city).forEach(d=>dids.add(d.id))}
- const income=routes.reduce((s,r)=>s+(+r.income||0),0);
+ const recs=db.receivables.filter(x=>(!month||x.month===month)&&(!city||rids.has(x.routeId)));
+ const billed=recs.reduce((s,x)=>s+(+(x.net??x.value)||0),0);
+ const income=recs.filter(x=>x.status==='Pago'||x.status==='received').reduce((s,x)=>s+(+(x.net??x.value)||0),0);
+ const receivable=recs.filter(x=>x.status!=='Pago'&&x.status!=='received'&&x.status!=='Cancelado').reduce((s,x)=>s+(+(x.net??x.value)||0),0);
  const fuel=db.fuel.filter(x=>(!month||monthOf(x.date)===month)&&(!city||vids.has(x.vehicleId))).reduce((s,x)=>s+(+x.total||0),0);
- const drivers=db.drivers.filter(d=>dids.has(d.id)).reduce((s,d)=>s+(+d.value||0),0);
+ const drivers=db.driverPayments.filter(x=>(!month||x.month===month)&&(!city||dids.has(x.driverId))).reduce((s,x)=>s+(+x.value||0),0);
  const expenses=db.expenses.filter(x=>(!month||monthOf(x.date)===month)&&(!city||rids.has(x.routeId)||vids.has(x.vehicleId))).reduce((s,x)=>s+(+x.value||0),0);
  const maint=db.maintenance.filter(x=>(!month||monthOf(x.date)===month)&&(!city||vids.has(x.vehicleId))).reduce((s,x)=>s+(+x.value||0),0);
- return {income,fuel,drivers,other:expenses+maint,result:income-fuel-drivers-expenses-maint}
+ return {income,billed,receivable,fuel,drivers,expenses,maint,other:expenses+maint,result:income-fuel-drivers-expenses-maint}
 }
 let selectedCity=''; let activeSub='resumo';
 $('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-page]');if(!b)return;document.querySelectorAll('#nav button,.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.page).classList.add('active');render()});
@@ -400,21 +432,28 @@ window.togglePaid=id=>{
  else {const d=db.drivers.find(x=>x.id===id);db.driverPayments.push({id:uid(),driverId:id,month,value:+(d?.value||0),paidAt:new Date().toISOString()})}
  save()
 }
-window.addCityRecord=(type)=>{
+window.updateReceiptLabel=input=>{const f=input?.files?.[0],e=document.getElementById('cfReceiptStatus');if(!e)return;if(f){e.textContent='✓ Foto anexada: '+f.name;e.className='badge good'}else{e.textContent='Nenhum comprovante';e.className='badge'}};
+
+window.addCityRecord=async(type)=>{
  const city=selectedCity;if(!city)return;
  const g=id=>document.getElementById(id)?.value||'';
- if(type==='vehicle')db.vehicles.push({id:uid(),city,plate:g('cvPlate').trim().toUpperCase(),model:g('cvModel').trim(),km:+g('cvKm')||0});
+ if(type==='vehicle')db.vehicles.push({id:uid(),city,plate:g('cvPlate').trim().toUpperCase(),model:g('cvModel').trim(),km:+g('cvKm')||0,crlvExpiry:g('cvCrlv')});
  if(type==='driver')db.drivers.push({id:uid(),city,name:g('cdName').trim(),cnh:g('cdCnh').trim(),value:+g('cdValue')||0,bank:g('cdBank').trim(),agency:g('cdAgency').trim(),account:g('cdAccount').trim(),operation:g('cdOperation').trim()});
  if(type==='link')db.links.push({id:uid(),routeId:g('clRoute'),vehicleId:g('clVehicle'),driverId:g('clDriver'),start:g('clStart'),end:g('clEnd')});
- if(type==='fuel')db.fuel.push({id:uid(),vehicleId:g('cfVehicle'),date:g('cfDate'),station:g('cfStation').trim(),liters:+g('cfLiters')||0,total:+g('cfTotal')||0,km:+g('cfKm')||0,pending:ONLINE_ROLE==='employee'});
+ if(type==='fuel'){const recFile=document.getElementById('cfReceipt')?.files?.[0],f={id:uid(),vehicleId:g('cfVehicle'),date:g('cfDate'),station:g('cfStation').trim(),liters:+g('cfLiters')||0,total:+g('cfTotal')||0,km:+g('cfKm')||0,pending:ONLINE_ROLE==='employee',receiptFile:recFile||null,receiptUrl:''};if(recFile){try{syncMsg('Enviando comprovante...');f.receiptUrl=await uploadFuelReceipt(f)}catch(e){alert(e.message);return}}db.fuel.push(f);}
  if(type==='attendance')db.attendance.push({id:uid(),routeId:g('caRoute'),month:g('caMonth'),planned:+g('caPlanned')||0,worked:+g('caWorked')||0,obs:g('caObs').trim()});
  if(type==='maintenance')db.maintenance.push({id:uid(),vehicleId:g('cmVehicle'),service:g('cmService').trim(),value:+g('cmValue')||0,date:g('cmDate'),nextKm:+g('cmNextKm')||0,nextDate:g('cmNextDate')});
  if(type==='document')db.documents.push({id:uid(),ownerType:g('cdoType'),ownerId:g('cdoOwner'),name:g('cdoName').trim(),expiry:g('cdoExpiry'),obs:g('cdoObs').trim()});
- if(type==='receivable')db.receivables.push({id:uid(),routeId:g('crRoute'),month:g('crMonth'),value:+g('crValue')||0,due:g('crDue'),status:g('crStatus')});
+ if(type==='receivable'){const gross=+g('crGross')||0,percent=+g('crPercent')||0,retained=gross*percent/100,net=gross-retained;db.receivables.push({id:uid(),routeId:g('crRoute'),month:g('crMonth'),invoice:g('crInvoice').trim(),gross,percent,retained,net,value:net,due:g('crDue'),status:g('crStatus')});}
  if(type==='expense')db.expenses.push({id:uid(),date:g('ceDate'),typeName:g('ceType').trim(),value:+g('ceValue')||0,vehicleId:g('ceVehicle'),routeId:g('ceRoute')});
  save()
 }
 function options(items,label){return '<option value="">Selecione</option>'+items.map(x=>`<option value="${x.id}">${esc(label(x))}</option>`).join('')}
+
+window.calcBillingPreview=()=>{const gross=+($('crGross')?.value||0),percent=+($('crPercent')?.value||0),retained=gross*percent/100,net=gross-retained;if($('crRetained'))$('crRetained').value=retained.toFixed(2);if($('crNet'))$('crNet').value=net.toFixed(2)};
+function daysUntil(date){if(!date)return null;const a=new Date();a.setHours(0,0,0,0);const b=new Date(date+'T00:00:00');return Math.ceil((b-a)/86400000)}
+function renderFleetAlerts(){const box=$('fleetAlerts');if(!box)return;const alerts=[];db.vehicles.forEach(v=>{const d=daysUntil(v.crlvExpiry);if(d!==null&&d<=45)alerts.push({danger:d<0,title:'CRLV '+(d<0?'VENCIDO':'próximo'),text:`${v.plate||v.model} • ${v.city||'—'} • ${d<0?Math.abs(d)+' dia(s) vencido':d+' dia(s) para vencer'}`})});db.maintenance.forEach(m=>{const v=db.vehicles.find(x=>x.id===m.vehicleId);const dd=daysUntil(m.nextDate);const kmLeft=(+m.nextKm||0)-(+v?.km||0);if((dd!==null&&dd<=30)||(m.nextKm&&kmLeft<=1000))alerts.push({danger:(dd!==null&&dd<0)||(m.nextKm&&kmLeft<=0),title:'Manutenção '+(((dd!==null&&dd<0)||(m.nextKm&&kmLeft<=0))?'URGENTE':'próxima'),text:`${v?.plate||v?.model||'Veículo'} • ${m.service||'Serviço'}${dd!==null?' • '+(dd<0?Math.abs(dd)+' dia(s) atrasada':dd+' dia(s)'):''}${m.nextKm?' • '+(kmLeft<=0?Math.abs(kmLeft)+' km ultrapassados':kmLeft+' km restantes'):''}`})});box.innerHTML=alerts.length?`<div class="alert-grid">${alerts.map(a=>`<div class="alert-item ${a.danger?'danger':''}"><b>${esc(a.title)}</b><div>${esc(a.text)}</div></div>`).join('')}</div>`:'<div class="empty">✓ Nenhum alerta próximo no momento.</div>'}
+
 function renderMunicipios(){
  const cities=allCities();if(!selectedCity||!cities.includes(selectedCity))selectedCity=cities[0]||'';
  $('cityTabs').innerHTML=cities.length?cities.map(c=>`<button class="city-tab ${c===selectedCity?'active':''}" onclick="setCityTab('${esc(c).replace(/'/g,"&#39;")}')">${esc(c)}</button>`).join(''):'<div class="empty">Cadastre o primeiro município.</div>';
@@ -430,17 +469,17 @@ function renderMunicipios(){
  $('cityArea').innerHTML=`
  <div class="cards"><div class="card"><small>Receita</small><div class="value">${money(m.income)}</div></div><div class="card"><small>Despesas</small><div class="value">${money(m.fuel+m.drivers+m.other)}</div></div><div class="card"><small>Resultado</small><div class="value">${money(m.result)}</div></div><div class="card"><small>A receber</small><div class="value">${money(pending)}</div></div></div>
  <div class="subtabs">
- ${[['resumo','Resumo'],['veiculos','Veículos'],['motoristas','Motoristas'],['vinculos','Vínculos'],['abastecimentos','Abastecimentos'],['dias','Dias trabalhados'],['manutencao','Manutenção'],['documentos','Documentos'],['receber','Contas a receber'],['despesas','Despesas']].map(x=>`<button class="subtab ${x[0]===activeSub?'active':''}" data-sub="${x[0]}" onclick="setSubtab('${x[0]}')">${x[1]}</button>`).join('')}
+ ${[['resumo','Resumo'],['veiculos','Veículos'],['motoristas','Motoristas'],['vinculos','Vínculos'],['abastecimentos','Abastecimentos'],['dias','Dias trabalhados'],['manutencao','Manutenção'],['documentos','Documentos'],['receber','Faturamentos'],['despesas','Despesas Extras']].map(x=>`<button class="subtab ${x[0]===activeSub?'active':''}" data-sub="${x[0]}" onclick="setSubtab('${x[0]}')">${x[1]}</button>`).join('')}
  </div>
  <div id="sub_resumo" class="subpage ${activeSub==='resumo'?'active':''}"><div class="grid"><div class="card"><h3>Contratos / Rotas</h3>${tbl(['Contrato','Rota','Receita','Competência','Status'],routes.map(r=>({type:'routes',id:r.id,cells:[esc(r.contract),esc(r.route),money(r.income),esc(r.month),esc(r.status)]})))}</div><div class="card"><h3>Indicadores</h3><p>Veículos: <b>${vehicles.length}</b></p><p>Motoristas: <b>${drivers.length}</b></p><p>Vínculos: <b>${links.length}</b></p><p>Abastecimentos: <b>${fuel.length}</b></p></div></div></div>
- <div id="sub_veiculos" class="subpage ${activeSub==='veiculos'?'active':''}"><div class="card"><h3>Cadastrar veículo em ${esc(selectedCity)}</h3><div class="row"><label>Placa<input id="cvPlate"></label><label>Modelo<input id="cvModel"></label><label>KM atual<input id="cvKm" type="number"></label></div><button class="primary" onclick="addCityRecord('vehicle')">Cadastrar</button></div>${tbl(['Placa','Modelo','KM atual'],vehicles.map(v=>({type:'vehicles',id:v.id,cells:[esc(v.plate),esc(v.model),v.km||0]})))}</div>
+ <div id="sub_veiculos" class="subpage ${activeSub==='veiculos'?'active':''}"><div class="card"><h3>Cadastrar veículo em ${esc(selectedCity)}</h3><div class="row"><label>Placa<input id="cvPlate"></label><label>Modelo<input id="cvModel"></label><label>KM atual<input id="cvKm" type="number"></label></div><div class="row2"><label>Vencimento CRLV<input id="cvCrlv" type="date"></label><div></div></div><button class="primary" onclick="addCityRecord('vehicle')">Cadastrar</button></div>${tbl(['Placa','Modelo','KM atual','Venc. CRLV'],vehicles.map(v=>({type:'vehicles',id:v.id,cells:[esc(v.plate),esc(v.model),v.km||0,esc(v.crlvExpiry||'—')]})))}</div>
  <div id="sub_motoristas" class="subpage ${activeSub==='motoristas'?'active':''}"><div class="card"><h3>Cadastrar motorista em ${esc(selectedCity)}</h3><div class="row"><label>Nome<input id="cdName"></label><label>CNH<input id="cdCnh"></label><label>Valor mensal<input id="cdValue" type="number" step=".01"></label></div><div class="row"><label>Banco<input id="cdBank"></label><label>Agência<input id="cdAgency"></label><label>Conta<input id="cdAccount"></label></div><div class="row2"><label>Operação<input id="cdOperation" placeholder="Ex.: 001, 013..."></label><div></div></div><button class="primary" onclick="addCityRecord('driver')">Cadastrar motorista</button></div>${tbl(['Pago','Nome','CNH','Valor','Banco','Agência','Conta','Operação'],drivers.map(d=>{const payMonth=hm||nowMonth(),paid=db.driverPayments.some(p=>p.driverId===d.id&&p.month===payMonth);return{type:'drivers',id:d.id,paid,cells:[`<label class="checkpaid"><input type="checkbox" ${paid?'checked':''} onchange="togglePaid('${d.id}')"> ${paid?'Já pago':'Pendente'} (${payMonth.slice(5,7)}/${payMonth.slice(0,4)})</label>`,esc(d.name),esc(d.cnh),money(d.value),esc(d.bank||'—'),esc(d.agency||'—'),esc(d.account||'—'),esc(d.operation||'—')]}}))}</div>
  <div id="sub_vinculos" class="subpage ${activeSub==='vinculos'?'active':''}"><div class="card"><div class="row"><label>Rota<select id="clRoute">${ro}</select></label><label>Veículo<select id="clVehicle">${vo}</select></label><label>Motorista<select id="clDriver">${do_}</select></label></div><div class="row2"><label>Início<input id="clStart" type="date"></label><label>Fim<input id="clEnd" type="date"></label></div><button class="primary" onclick="addCityRecord('link')">Criar vínculo</button></div>${tbl(['Rota','Veículo','Motorista','Início','Fim'],links.map(x=>({type:'links',id:x.id,cells:[esc(routeName(x.routeId)),esc(vehicleName(x.vehicleId)),esc(driverName(x.driverId)),esc(x.start),esc(x.end||'Ativo')]})))}</div>
- <div id="sub_abastecimentos" class="subpage ${activeSub==='abastecimentos'?'active':''}"><div class="card"><div class="row"><label>Veículo<select id="cfVehicle">${vo}</select></label><label>Data<input id="cfDate" type="date"></label><label>Posto<input id="cfStation"></label></div><div class="row"><label>Litros<input id="cfLiters" type="number" step=".01"></label><label>Valor total<input id="cfTotal" type="number" step=".01"></label><label>KM<input id="cfKm" type="number"></label></div><button class="primary" onclick="addCityRecord('fuel')">Lançar</button></div>${tbl(['Veículo','Data','Posto','Litros','Total','KM'],fuel.map(x=>({type:'fuel',id:x.id,cells:[esc(vehicleName(x.vehicleId)),esc(x.date),esc(x.station),x.liters,money(x.total),x.km]})))}</div>
+ <div id="sub_abastecimentos" class="subpage ${activeSub==='abastecimentos'?'active':''}"><div class="card"><div class="row"><label>Veículo<select id="cfVehicle">${vo}</select></label><label>Data<input id="cfDate" type="date"></label><label>Posto<input id="cfStation"></label></div><div class="row"><label>Litros<input id="cfLiters" type="number" step=".01"></label><label>Valor total<input id="cfTotal" type="number" step=".01"></label><label>KM<input id="cfKm" type="number"></label></div><div class="receipt-upload" style="margin:12px 0;padding:14px;border:1px dashed #98a2b3;border-radius:10px;background:#f8fafc"><b>Comprovante do abastecimento</b><p class="note" style="margin:5px 0 10px">Tire uma foto do recibo ou escolha uma imagem já salva no celular.</p><input id="cfReceipt" type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf" style="display:none" onchange="updateReceiptLabel(this)"><button class="secondary" type="button" onclick="document.getElementById('cfReceipt').click()">📎 📷 Anexar / Tirar foto do recibo</button><span id="cfReceiptStatus" class="badge" style="margin-left:8px">Nenhum comprovante</span></div><button class="primary" onclick="addCityRecord('fuel')">Lançar</button></div>${tbl(['Veículo','Data','Posto','Litros','Total','KM','Comprovante'],fuel.map(x=>({type:'fuel',id:x.id,cells:[esc(vehicleName(x.vehicleId)),esc(x.date),esc(x.station),x.liters,money(x.total),x.km,x.receiptUrl?`<button class="secondary" type="button" onclick="viewFuelReceipt(\'${esc(x.receiptUrl)}\')">📎 Ver comprovante</button> <button class="secondary" type="button" onclick="attachFuelReceipt(\'${x.id}\')">📎 Trocar arquivo</button>`:x.receiptFile?`<span class="badge good">✓ Foto selecionada</span> <button class="secondary" type="button" onclick="attachFuelReceipt('${x.id}')">📎 Trocar arquivo</button>`:`<button class="secondary" type="button" onclick="attachFuelReceipt('${x.id}')">📎 📷 Anexar foto</button>`]})))}</div>
  <div id="sub_dias" class="subpage ${activeSub==='dias'?'active':''}"><div class="card"><div class="row"><label>Rota<select id="caRoute">${ro}</select></label><label>Competência<input id="caMonth" type="month"></label><label>Dias previstos<input id="caPlanned" type="number"></label></div><div class="row2"><label>Dias trabalhados<input id="caWorked" type="number"></label><label>Observação<input id="caObs"></label></div><button class="primary" onclick="addCityRecord('attendance')">Registrar</button></div>${tbl(['Rota','Competência','Previstos','Trabalhados','Observação'],att.map(x=>({type:'attendance',id:x.id,cells:[esc(routeName(x.routeId)),esc(x.month),x.planned,x.worked,esc(x.obs)]})))}</div>
  <div id="sub_manutencao" class="subpage ${activeSub==='manutencao'?'active':''}"><div class="card"><div class="row"><label>Veículo<select id="cmVehicle">${vo}</select></label><label>Serviço<input id="cmService"></label><label>Valor<input id="cmValue" type="number" step=".01"></label></div><div class="row"><label>Data<input id="cmDate" type="date"></label><label>Próxima em KM<input id="cmNextKm" type="number"></label><label>Próxima data<input id="cmNextDate" type="date"></label></div><button class="primary" onclick="addCityRecord('maintenance')">Registrar</button></div>${tbl(['Veículo','Serviço','Data','Valor','Próx. KM','Próx. data'],maint.map(x=>({type:'maintenance',id:x.id,cells:[esc(vehicleName(x.vehicleId)),esc(x.service),esc(x.date),money(x.value),x.nextKm||'—',esc(x.nextDate||'—')]})))}</div>
  <div id="sub_documentos" class="subpage ${activeSub==='documentos'?'active':''}"><div class="card"><div class="row"><label>Tipo<select id="cdoType" onchange="renderMunicipios()"><option>Veículo</option><option>Motorista</option></select></label><label>Responsável<select id="cdoOwner">${vo}</select></label><label>Documento<input id="cdoName"></label></div><div class="row2"><label>Vencimento<input id="cdoExpiry" type="date"></label><label>Observação<input id="cdoObs"></label></div><button class="primary" onclick="addCityRecord('document')">Cadastrar</button></div>${tbl(['Tipo','Responsável','Documento','Vencimento','Observação'],docs.map(x=>({type:'documents',id:x.id,cells:[esc(x.ownerType),esc(x.ownerType==='Motorista'?driverName(x.ownerId):vehicleName(x.ownerId)),esc(x.name),esc(x.expiry),esc(x.obs)]})))}</div>
- <div id="sub_receber" class="subpage ${activeSub==='receber'?'active':''}"><div class="card"><div class="row"><label>Rota<select id="crRoute">${ro}</select></label><label>Competência<input id="crMonth" type="month"></label><label>Valor<input id="crValue" type="number" step=".01"></label></div><div class="row2"><label>Vencimento<input id="crDue" type="date"></label><label>Status<select id="crStatus"><option>Pendente</option><option>Pago</option></select></label></div><button class="primary" onclick="addCityRecord('receivable')">Lançar</button></div>${tbl(['Rota','Competência','Valor','Vencimento','Status'],rec.map(x=>({type:'receivables',id:x.id,cells:[esc(routeName(x.routeId)),esc(x.month),money(x.value),esc(x.due),`<span class="badge ${x.status==='Pago'?'good':'warning'}">${esc(x.status)}</span>`]})))}</div>
+ <div id="sub_receber" class="subpage ${activeSub==='receber'?'active':''}"><div class="card"><div class="row"><label>Rota<select id="crRoute">${ro}</select></label><label>Competência<input id="crMonth" type="month"></label><label>Nº da Nota<input id="crInvoice" placeholder="Ex.: 1234"></label></div><div class="row"><label>Valor bruto (R$)<input id="crGross" type="number" step=".01" oninput="calcBillingPreview()"></label><label>Retenção / desconto (%)<input id="crPercent" type="number" step=".01" min="0" max="100" oninput="calcBillingPreview()"></label><label>Valor líquido (R$)<input id="crNet" type="number" step=".01" readonly></label></div><div class="row"><label>Valor retido (R$)<input id="crRetained" type="number" step=".01" readonly></label><label>Vencimento<input id="crDue" type="date"></label><label>Status<select id="crStatus"><option>Pendente</option><option>Pago</option></select></label></div><button class="primary" onclick="addCityRecord('receivable')">Lançar faturamento</button></div>${tbl(['Rota','Competência','Nota','Bruto','Retenção %','Retido','Líquido','Vencimento','Status'],rec.map(x=>({type:'receivables',id:x.id,cells:[esc(routeName(x.routeId)),esc(x.month),esc(x.invoice||'—'),money(x.gross??x.value),Number(x.percent||0).toFixed(2)+'%',money(x.retained||0),money(x.net??x.value),esc(x.due),`<span class="badge ${x.status==='Pago'?'good':'warning'}">${esc(x.status)}</span>`]})))}</div>
  <div id="sub_despesas" class="subpage ${activeSub==='despesas'?'active':''}"><div class="card"><div class="row"><label>Data<input id="ceDate" type="date"></label><label>Tipo<input id="ceType"></label><label>Valor<input id="ceValue" type="number" step=".01"></label></div><div class="row2"><label>Veículo<select id="ceVehicle"><option value="">Nenhum</option>${vehicles.map(v=>`<option value="${v.id}">${esc(v.plate)} — ${esc(v.model)}</option>`).join('')}</select></label><label>Rota<select id="ceRoute"><option value="">Nenhuma</option>${routes.map(r=>`<option value="${r.id}">${esc(r.route)}</option>`).join('')}</select></label></div><button class="primary" onclick="addCityRecord('expense')">Lançar</button></div>${tbl(['Data','Tipo','Valor','Veículo','Rota'],exp.map(x=>({type:'expenses',id:x.id,cells:[esc(x.date),esc(x.typeName),money(x.value),esc(vehicleName(x.vehicleId)),esc(routeName(x.routeId))]})))}</div>`;
 }
 
@@ -463,7 +502,7 @@ function renderMonthlyHistory(){
  const exps=db.expenses.filter(x=>monthOf(x.date)===hm);
  sections.push('<h4>Despesas</h4>'+tbl(['Data','Tipo','Valor','Veículo','Rota'],exps.map(x=>({type:'expenses',id:x.id,cells:[esc(x.date),esc(x.typeName),money(x.value),esc(vehicleName(x.vehicleId)),esc(routeName(x.routeId))]}))));
  const recs=db.receivables.filter(x=>x.month===hm);
- sections.push('<h4>Contas a receber</h4>'+tbl(['Rota','Valor','Vencimento','Status'],recs.map(x=>({type:'receivables',id:x.id,cells:[esc(routeName(x.routeId)),money(x.value),esc(x.due),esc(x.status)]}))));
+ sections.push('<h4>Faturamentos</h4>'+tbl(['Rota','Valor','Vencimento','Status'],recs.map(x=>({type:'receivables',id:x.id,cells:[esc(routeName(x.routeId)),money(x.value),esc(x.due),esc(x.status)]}))));
  const pays=db.driverPayments.filter(x=>x.month===hm);
  sections.push('<h4>Pagamentos de motoristas</h4>'+tbl(['Motorista','Valor','Pago em'],pays.map(x=>({type:'driverPayments',id:x.id,cells:[esc(driverName(x.driverId)),money(x.value),new Date(x.paidAt).toLocaleString('pt-BR')]}))));
  const msgs=db.messages.filter(x=>monthOf(x.createdAt)===hm);
@@ -476,17 +515,17 @@ function render(){
  const cities=allCities(),cityOpts='<option value="">Selecione</option>'+cities.map(c=>`<option>${esc(c)}</option>`).join('');
  $('rCity').innerHTML=cityOpts;
  const cur=$('finCity').value;$('finCity').innerHTML='<option value="">Todos</option>'+cities.map(c=>`<option ${c===cur?'selected':''}>${esc(c)}</option>`).join('');
- renderMunicipios();
+ renderMunicipios();renderFleetAlerts();
  $('routesTable').innerHTML=tbl(['Município','Contrato','Rota','Receita','Competência','Status'],db.routes.filter(r=>!histMonth()||r.month===histMonth()).map(r=>({type:'routes',id:r.id,cells:[esc(r.city),esc(r.contract),esc(r.route),money(r.income),esc(r.month),esc(r.status)]})));
- $('receivablesTable').innerHTML=tbl(['Município','Rota','Competência','Valor','Vencimento','Status'],db.receivables.filter(x=>!histMonth()||x.month===histMonth()).map(x=>{const r=db.routes.find(r=>r.id===x.routeId);return{type:'receivables',id:x.id,cells:[esc(r?.city||'—'),esc(routeName(x.routeId)),esc(x.month),money(x.value),esc(x.due),`<span class="badge ${x.status==='Pago'?'good':'warning'}">${esc(x.status)}</span>`]}}));
- const gm=metrics('',histMonth()), pending=db.receivables.filter(x=>(!histMonth()||x.month===histMonth())).filter(x=>x.status!=='Pago').reduce((s,x)=>s+(+x.value||0),0);
- $('pIncome').textContent=money(gm.income);$('pCosts').textContent=money(gm.fuel+gm.drivers+gm.other);$('pResult').textContent=money(gm.result);$('pReceivable').textContent=money(pending);drawBar($('generalChart'),['Entradas','Despesas','Resultado'],[gm.income,gm.fuel+gm.drivers+gm.other,gm.result]);
- $('citySummary').innerHTML=cities.length?`<table><thead><tr><th>Município</th><th>Entradas</th><th>Despesas</th><th>Resultado</th></tr></thead><tbody>${cities.map(c=>{const m=metrics(c,histMonth());return`<tr><td>${esc(c)}</td><td>${money(m.income)}</td><td>${money(m.fuel+m.drivers+m.other)}</td><td>${money(m.result)}</td></tr>`}).join('')}</tbody></table>`:'<div class="empty">Nenhum município cadastrado.</div>';
+ $('receivablesTable').innerHTML=tbl(['Município','Rota','Competência','Nota','Bruto','Retenção %','Líquido','Vencimento','Status'],db.receivables.filter(x=>!histMonth()||x.month===histMonth()).map(x=>{const r=db.routes.find(r=>r.id===x.routeId);return{type:'receivables',id:x.id,cells:[esc(r?.city||'—'),esc(routeName(x.routeId)),esc(x.month),esc(x.invoice||'—'),money(x.gross??x.value),Number(x.percent||0).toFixed(2)+'%',money(x.net??x.value),esc(x.due),`<span class="badge ${x.status==='Pago'?'good':'warning'}">${esc(x.status)}</span>`]}}));
+ const gm=metrics('',histMonth()), pending=gm.receivable;
+ $('pBilled').textContent=money(gm.billed);$('pIncome').textContent=money(gm.income);$('pCosts').textContent=money(gm.fuel+gm.drivers+gm.other);$('pResult').textContent=money(gm.result);$('pReceivable').textContent=money(gm.receivable);drawBar($('generalChart'),['Recebido','Despesas','Resultado'],[gm.income,gm.fuel+gm.drivers+gm.other,gm.result]);
+ $('citySummary').innerHTML=cities.length?`<table><thead><tr><th>Município</th><th>Recebido</th><th>Despesas</th><th>Resultado</th></tr></thead><tbody>${cities.map(c=>{const m=metrics(c,histMonth());return`<tr><td>${esc(c)}</td><td>${money(m.income)}</td><td>${money(m.fuel+m.drivers+m.other)}</td><td>${money(m.result)}</td></tr>`}).join('')}</tbody></table>`:'<div class="empty">Nenhum município cadastrado.</div>';
  const mf=$('finMonth').value,cf=$('finCity').value,fm=metrics(cf,mf);$('fIncome').textContent=money(fm.income);$('fFuel').textContent=money(fm.fuel);$('fDrivers').textContent=money(fm.drivers);$('fOther').textContent=money(fm.other);$('fResult').textContent=money(fm.result);
  const list=cf?[cf]:cities;$('financeCityTable').innerHTML=`<table><thead><tr><th>Município</th><th>Entradas</th><th>Combustível</th><th>Motoristas</th><th>Outros</th><th>Resultado</th></tr></thead><tbody>${list.map(c=>{const m=metrics(c,mf);return`<tr><td>${esc(c)}</td><td>${money(m.income)}</td><td>${money(m.fuel)}</td><td>${money(m.drivers)}</td><td>${money(m.other)}</td><td>${money(m.result)}</td></tr>`}).join('')}</tbody></table>`;
 }
 $('finMonth').addEventListener('change',render);$('finCity').addEventListener('change',render);$('clearFin').addEventListener('click',()=>{$('finMonth').value='';$('finCity').value='';render()});$('printBtn').addEventListener('click',()=>window.print());
-$('exportCSV').addEventListener('click',()=>{const rows=[['Município','Entradas','Combustível','Motoristas','Outros','Resultado'],...allCities().map(c=>{const m=metrics(c,$('finMonth').value);return[c,m.income,m.fuel,m.drivers,m.other,m.result]})];const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='financeiro_geral_frota.csv';a.click();URL.revokeObjectURL(a.href)});
+$('exportCSV').addEventListener('click',()=>{const rows=[['Município','Recebido','Combustível','Motoristas pagos','Manutenção + extras','Resultado'],...allCities().map(c=>{const m=metrics(c,$('finMonth').value);return[c,m.income,m.fuel,m.drivers,m.other,m.result]})];const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='financeiro_geral_frota.csv';a.click();URL.revokeObjectURL(a.href)});
 
 function renderMessages(){
  const list=[...db.messages].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
@@ -508,12 +547,12 @@ const HELP=[
 ['Entradas gerais','Soma das receitas cadastradas nos contratos/rotas dentro do período selecionado.'],
 ['Despesas gerais','Soma dos custos considerados pelo sistema no período: combustível, motoristas, manutenções e despesas extras.'],
 ['Resultado geral','Diferença entre Entradas gerais e Despesas gerais. Valor positivo indica sobra operacional no cadastro; valor negativo indica que as despesas superaram as entradas.'],
-['Total a receber','Soma das contas a receber que ainda não estão marcadas como Pago.'],
+['Total a receber','Soma das faturamentos que ainda não estão marcadas como Pago.'],
 ['Resultado por município','Tabela que separa entradas, despesas e resultado de cada município para comparação e acompanhamento.'],
 
-['MUNICÍPIOS — O que é?','É a área principal de organização operacional. Cada município mantém sua própria frota, motoristas, vínculos, abastecimentos, frequência, manutenção, documentos, contas a receber e despesas.'],
+['MUNICÍPIOS — O que é?','É a área principal de organização operacional. Cada município mantém sua própria frota, motoristas, vínculos, abastecimentos, frequência, manutenção, documentos, faturamentos e despesas.'],
 ['Novo município','Campo usado para cadastrar uma nova cidade atendida pela empresa. Exemplo: Catarina.'],
-['Resumo do município','Mostra receita, despesas, resultado, contas a receber, contratos/rotas e indicadores somente do município selecionado.'],
+['Resumo do município','Mostra receita, despesas, resultado, faturamentos, contratos/rotas e indicadores somente do município selecionado.'],
 
 ['VEÍCULOS — O que é?','Cadastro dos veículos usados naquele município.'],
 ['Placa','Identificação oficial do veículo. Digite a placa correspondente ao veículo cadastrado.'],
@@ -577,15 +616,15 @@ const HELP=[
 ['Vencimento do documento','Data em que o documento vence.'],
 ['Observação do documento','Informação complementar sobre o documento ou seu vencimento.'],
 
-['CONTAS A RECEBER — O que é?','Registra valores que a empresa tem para receber das rotas/contratos. O menu principal reúne os lançamentos dos municípios.'],
-['Rota / contrato da conta a receber','Define de qual operação vem aquele recebimento.'],
-['Competência da conta a receber','Mês e ano ao qual o valor se refere.'],
+['FATURAMENTOS — O que é?','Registra valores que a empresa tem para receber das rotas/contratos. O menu principal reúne os lançamentos dos municípios.'],
+['Rota / contrato da faturamento','Define de qual operação vem aquele recebimento.'],
+['Competência da faturamento','Mês e ano ao qual o valor se refere.'],
 ['Valor a receber','Valor financeiro esperado para recebimento.'],
 ['Vencimento da conta','Data prevista para pagamento/recebimento.'],
 ['Status Pendente','Indica que a conta ainda não foi registrada como recebida/paga.'],
 ['Status Pago','Indica que a conta foi concluída como paga/recebida no controle.'],
 
-['DESPESAS — O que é?','Área para registrar custos que não são lançados diretamente como combustível, motorista ou manutenção.'],
+['DESPESAS EXTRAS — O que é?','Área para registrar custos que não são lançados diretamente como combustível, motorista ou manutenção.'],
 ['Data da despesa','Data em que a despesa ocorreu. Determina em qual mês ela aparece no histórico.'],
 ['Tipo da despesa','Descrição do gasto. Exemplos: pneu, pedágio, lavagem, material ou outro custo.'],
 ['Valor da despesa','Valor gasto. Entra no cálculo das despesas do período.'],
@@ -606,9 +645,9 @@ const HELP=[
 
 ['HISTÓRICO MENSAL — O que é?','Permite voltar a uma competência antiga e consultar os lançamentos registrados naquele mês.'],
 ['Histórico por mês','O sistema abre automaticamente no mês atual. Para consultar outro período, escolha o mês e o ano desejados. Exemplo: em 2027 você poderá selecionar 08/2026 para consultar agosto de 2026.'],
-['Histórico completo do período','Reúne os lançamentos encontrados para o mês selecionado, como contratos/rotas, abastecimentos, dias trabalhados, manutenções, despesas, contas a receber, pagamentos de motoristas e recados registrados.'],
+['Histórico completo do período','Reúne os lançamentos encontrados para o mês selecionado, como contratos/rotas, abastecimentos, dias trabalhados, manutenções, despesas, faturamentos, pagamentos de motoristas e recados registrados.'],
 ['Mês atual','Retorna imediatamente ao mês atual.'],
-['Por que uma despesa aparece em determinado mês?','Despesas, abastecimentos e manutenções usam suas datas para determinar o mês. Contratos, frequência e contas a receber usam a competência cadastrada.'],
+['Por que uma despesa aparece em determinado mês?','Despesas, abastecimentos e manutenções usam suas datas para determinar o mês. Contratos, frequência e faturamentos usam a competência cadastrada.'],
 
 ['RECADOS — O que é?','Área no canto superior direito para as pessoas que utilizam o sistema deixarem mensagens entre si.'],
 ['De — Recados','Nome da pessoa que está deixando o recado.'],
@@ -624,8 +663,8 @@ const HELP=[
 ['AJUDA — O que é?','Esta própria Central de Ajuda. Use a pesquisa para localizar explicações de telas, campos e funções.'],
 ['Como pesquisar na Ajuda?','Digite o nome do campo ou assunto. Exemplos: Agência, KM, Competência, Já pago, Resultado, Documento, Vínculo ou Abastecimento.'],
 
-['SALVAMENTO DOS DADOS','Nesta versão os registros ficam no armazenamento local do navegador deste computador. Eles ainda não formam um banco de dados online compartilhado.'],
-['Se eu fechar o navegador perco os dados?','Normalmente não: o sistema usa armazenamento local do navegador. Porém, apagar os dados do navegador, usar outro navegador/computador ou certas limpezas do sistema pode impedir o acesso a esses registros. A futura versão online terá banco de dados próprio.'],
+['SALVAMENTO DOS DADOS','A versão V5.7 utiliza a base online para os módulos sincronizados e preserva dados locais como segurança operacional.'],
+['Se eu fechar o navegador perco os dados?','Normalmente não: o sistema usa armazenamento local do navegador. Porém, apagar os dados do navegador, usar outro navegador/computador ou certas limpezas do sistema pode impedir o acesso a esses registros. Os módulos online são compartilhados pelo Supabase; dados ainda não migrados integralmente continuam preservados localmente.'],
 ['Duas pessoas conseguem usar ao mesmo tempo?','Nesta versão local, cada navegador/computador tem seu próprio armazenamento. Para duas pessoas trabalharem realmente na mesma base em tempo real, é necessária a etapa online com login e banco de dados compartilhado.'],
 ['Uso no celular','A interface é responsiva para telas menores. A etapa futura de PWA/online permitirá instalação com aparência de aplicativo e sincronização entre dispositivos.'],
 ['Excluir registro','O botão Excluir remove o registro correspondente após confirmação. Antes de excluir informações históricas importantes, confirme se realmente não serão mais necessárias.'],
