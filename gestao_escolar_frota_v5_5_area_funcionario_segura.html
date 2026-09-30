@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17233b">
+<title>Gestão Escolar Frota V5.5</title>
+<style>
+:root{--bg:#f5f7fb;--nav:#17233b;--card:#fff;--line:#dfe5ee;--text:#1d2939;--muted:#667085;--accent:#2563eb;--ok:#027a48;--warn:#b54708;--danger:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:20}
+header h1{font-size:20px;margin:0}header span{font-size:12px;color:var(--muted)}
+.header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.header-btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;position:relative}.msg-count{position:absolute;right:-5px;top:-7px;background:var(--danger);color:#fff;border-radius:999px;min-width:18px;height:18px;padding:0 5px;font-size:10px;display:flex;align-items:center;justify-content:center}
+.modal{display:none;position:fixed;inset:0;background:rgba(16,24,40,.45);z-index:100;padding:20px;align-items:flex-start;justify-content:flex-end}.modal.open{display:flex}.modal-card{background:#fff;width:min(470px,100%);max-height:90vh;overflow:auto;border-radius:12px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.2)}.modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.closebtn{border:0;background:transparent;font-size:24px;cursor:pointer}.message{border:1px solid var(--line);border-radius:8px;padding:10px;margin:8px 0}.help-item{border:1px solid var(--line);border-radius:8px;margin:8px 0;overflow:hidden}.help-q{width:100%;border:0;background:#f8fafc;padding:12px;text-align:left;font-weight:700;cursor:pointer}.help-a{display:none;padding:12px;line-height:1.5}.help-item.open .help-a{display:block}.help-search{margin:10px 0 14px}.help-tip{background:#eff8ff;border:1px solid #b2ddff;border-radius:8px;padding:10px;margin:10px 0;font-size:13px}.field-help{cursor:help;border-bottom:1px dotted #667085}.help-category{margin-top:16px;padding-top:8px;border-top:1px solid var(--line)}.message small{color:var(--muted)}.message.unread{border-left:4px solid #1570ef;background:#f5f9ff}.read-status{display:inline-flex;align-items:center;gap:5px;font-weight:700;margin-top:5px}.read-status.read{color:#067647}.read-status.unread{color:#667085}.msg-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.historybar{display:flex;gap:8px;align-items:end;flex-wrap:wrap;background:#eef4ff;border:1px solid #c7d7fe;padding:10px;border-radius:8px;margin-bottom:14px}.historybar label{margin:0;min-width:170px}.history-tag{font-weight:700;color:#1849a9;padding:8px 0}
+.wrap{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 64px)}
+nav{background:var(--nav);padding:14px 10px}nav button{width:100%;border:0;background:transparent;color:#d6deeb;text-align:left;padding:12px;border-radius:7px;margin:2px 0;cursor:pointer;font-size:14px}
+nav button.active,nav button:hover{background:#263755;color:#fff}
+main{padding:22px;min-width:0}.page{display:none}.page.active{display:block}
+h2{margin:0 0 6px}.note{color:var(--muted);font-size:13px;margin:0 0 14px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:15px}.card small{color:var(--muted)}.value{font-size:22px;font-weight:700;margin-top:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.row2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:9px}textarea{min-height:80px}input,select,textarea{width:100%;padding:9px;border:1px solid #cfd6e2;border-radius:6px;background:#fff;color:var(--text);margin-top:4px}
+button.primary{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:10px 14px;cursor:pointer}button.secondary{background:#fff;border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer}
+table{width:100%;border-collapse:collapse;background:#fff;margin-top:12px;font-size:13px}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}th{background:#f8fafc}.actions button{border:0;background:transparent;color:var(--danger);cursor:pointer}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;background:#eef2f6}.good{background:#d1fadf;color:var(--ok)}.warning{background:#fef0c7;color:var(--warn)}
+.empty{color:var(--muted);padding:18px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin-top:10px}
+.city-tabs,.subtabs,.toolbar,.report-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.city-tab,.subtab{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:7px;cursor:pointer}.city-tab.active,.subtab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.subpage{display:none}.subpage.active{display:block}.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.filters{background:#fff;border:1px solid var(--line);padding:12px;border-radius:8px;margin-bottom:14px}.toolbar label{min-width:160px;margin:0}
+.checkpaid{display:flex;align-items:center;gap:6px}.checkpaid input{width:auto;margin:0}.paidrow{background:#f0fdf4}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}.chartbox{height:250px;position:relative}.chartbox canvas{width:100%;height:100%}
+@media print{header,nav,form,.report-actions,.subtabs,.city-tabs,.note{display:none!important}.wrap{display:block}main{padding:0}.page{display:none!important}.page.active{display:block!important}}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}nav{display:flex;overflow:auto;position:sticky;top:64px;z-index:15}nav button{min-width:150px}.cards{grid-template-columns:repeat(2,1fr)}.row,.row2,.grid,.charts{grid-template-columns:1fr}}
+@media(max-width:560px){header{padding:0 12px}header h1{font-size:16px}main{padding:12px}.cards{grid-template-columns:1fr}.city-tab{flex:1 1 calc(50% - 8px)}table{display:block;overflow-x:auto;white-space:nowrap}}
+
+body.employee-mode #settingsBtn,
+body.employee-mode #nav button:not([data-page="municipios"]),
+body.employee-mode #cityForm,
+body.employee-mode .historybar{display:none!important}
+body.employee-mode .subtab:not([data-sub="abastecimentos"]){display:none!important}
+body.employee-mode .subpage:not(#sub_abastecimentos){display:none!important}
+body.employee-mode #sub_abastecimentos{display:block!important}
+body.employee-mode #syncBtn{display:inline-block!important}
+</style>
+
+<style>
+#authGate{position:fixed;inset:0;background:#f4f7fb;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.auth-card{width:min(430px,100%);background:white;border-radius:18px;padding:26px;box-shadow:0 18px 60px #0002}.auth-card h2{margin:0 0 6px}.auth-card input{width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1px solid #ccd4df;border-radius:9px}.auth-actions{display:flex;gap:8px;flex-wrap:wrap}.auth-status{margin-top:12px;font-size:14px}.user-badge{font-size:12px;background:#ffffff22;padding:7px 10px;border-radius:999px}.logout-btn{border:1px solid #ffffff55;background:transparent;color:white;border-radius:8px;padding:7px 10px;cursor:pointer}
+</style></head>
+<body>
+<div id="authGate">
+ <div class="auth-card">
+  <h2>Gestão Escolar Frota</h2><p class="note">Acesso online seguro</p>
+  <label>E-mail<input id="authEmail" type="email" value="yellowrentacar@hotmail.com" autocomplete="email"></label>
+  <label>Senha<input id="authPassword" type="password" minlength="6" autocomplete="current-password" placeholder="Digite sua senha"></label>
+  <div class="auth-actions"><button class="primary" id="loginBtn" type="button">Entrar</button><button class="secondary" id="signupBtn" type="button">Primeiro acesso</button></div>
+  <div class="auth-status" id="authStatus">No primeiro acesso, crie sua senha usando o botão “Primeiro acesso”.</div>
+ </div>
+</div>
+
+<header><h1>Gestão Escolar Frota</h1><div class="header-right"><span class="user-badge" id="onlineUser">V5.5 • Online</span><button class="header-btn" id="helpBtn">❓ Ajuda</button><button class="header-btn" id="messagesBtn">💬 Recados <span class="msg-count" id="msgCount">0</span></button><button class="header-btn" id="syncBtn" type="button">☁ Enviar</button><button class="header-btn" id="cloudLoadBtn" type="button">↻ Atualizar online</button><span class="user-badge" id="syncStatus">Local preservado</span><button class="header-btn" id="settingsBtn" type="button">⚙️ Configurações</button><button class="header-btn" id="logoutBtn" type="button">🚪 Sair</button></div></header>
+<div class="wrap">
+<nav id="nav">
+<button class="active" data-page="painel">Painel</button>
+<button data-page="municipios">Municípios</button>
+<button data-page="contratos">Contratos</button>
+<button data-page="receber">Contas a receber</button>
+<button data-page="financeiro">Financeiro</button>
+</nav>
+<main>
+<div class="historybar"><label>Histórico por mês<input id="historyMonth" type="month"></label><button class="secondary" id="historyCurrent" type="button">Mês atual</button><span class="history-tag" id="historyLabel">Todos os períodos</span></div>
+<section id="painel" class="page active">
+<h2>Painel Geral</h2><p class="note">Resumo consolidado de todos os municípios.</p>
+<div class="cards">
+<div class="card"><small>Entradas gerais</small><div class="value" id="pIncome">R$ 0,00</div></div>
+<div class="card"><small>Despesas gerais</small><div class="value" id="pCosts">R$ 0,00</div></div>
+<div class="card"><small>Resultado geral</small><div class="value" id="pResult">R$ 0,00</div></div>
+<div class="card"><small>Total a receber</small><div class="value" id="pReceivable">R$ 0,00</div></div>
+</div>
+<div class="charts"><div class="card"><h3>Resultado geral</h3><div class="chartbox"><canvas id="generalChart"></canvas></div></div><div class="card"><h3>Resultado por município</h3><div id="citySummary"></div></div></div>
+<div class="card" style="margin-top:14px"><h3>Histórico completo do período</h3><p class="note">Quando um mês é selecionado, aparecem aqui os lançamentos daquele mês em todas as categorias.</p><div id="monthlyHistory"></div></div>
+</section>
+
+<section id="municipios" class="page">
+<div class="section-title"><div><h2>Municípios</h2><p class="note">Cada município possui seus próprios registros.</p></div></div>
+<form id="cityForm" class="card"><div class="row2"><label>Novo município<input id="newCity" required placeholder="Ex.: Catarina"></label><div style="align-self:end"><button class="primary">Cadastrar município</button></div></div></form>
+<div id="cityTabs" class="city-tabs"></div>
+<div id="cityArea"></div>
+</section>
+
+<section id="contratos" class="page">
+<h2>Contratos</h2><p class="note">Cadastro geral de contratos e rotas, sempre vinculado a um município.</p>
+<form id="routeForm" class="card">
+<div class="row"><label>Município<select id="rCity" required></select></label><label>Contrato<input id="rContract" required></label><label>Rota<input id="rRoute" required></label></div>
+<div class="row"><label>Receita mensal (R$)<input id="rIncome" type="number" step=".01" min="0" required></label><label>Competência<input id="rMonth" type="month" required></label><label>Status<select id="rStatus"><option>Ativo</option><option>Suspenso</option><option>Encerrado</option></select></label></div>
+<button class="primary">Cadastrar contrato / rota</button>
+</form><div id="routesTable"></div>
+</section>
+
+<section id="receber" class="page">
+<h2>Contas a receber</h2><p class="note">Visão consolidada das contas de todos os municípios.</p>
+<div id="receivablesTable"></div>
+</section>
+
+<section id="financeiro" class="page">
+<h2>Financeiro Geral</h2><p class="note">Soma automática das entradas e despesas de todos os municípios.</p>
+<div class="report-actions"><button class="secondary" id="exportCSV">Exportar Excel (CSV)</button><button class="secondary" id="printBtn">Gerar PDF / Imprimir</button></div>
+<div class="filters"><div class="toolbar"><label>Competência<input id="finMonth" type="month"></label><label>Município<select id="finCity"><option value="">Todos</option></select></label><button class="secondary" id="clearFin" type="button">Limpar filtros</button></div></div>
+<div class="cards"><div class="card"><small>Entradas</small><div class="value" id="fIncome">R$ 0,00</div></div><div class="card"><small>Combustível</small><div class="value" id="fFuel">R$ 0,00</div></div><div class="card"><small>Motoristas</small><div class="value" id="fDrivers">R$ 0,00</div></div><div class="card"><small>Outras despesas</small><div class="value" id="fOther">R$ 0,00</div></div></div>
+<div class="card"><h3>Resultado operacional: <span id="fResult">R$ 0,00</span></h3><div id="financeCityTable"></div></div>
+</section>
+</main></div>
+
+
+<div class="modal" id="settingsModal"><div class="modal-card">
+<div class="modal-head"><div><h2 style="margin:0">⚙️ Configurações</h2><p class="note" style="margin-top:4px">Conta, acesso e administração do sistema.</p></div><button class="closebtn" id="closeSettings">×</button></div>
+<div class="card">
+  <h3 style="margin-top:0">Usuário conectado</h3>
+  <p><b>E-mail:</b> <span id="settingsEmail">—</span></p>
+  <p><b>Perfil:</b> <span id="settingsRole">Verificando...</span></p>
+  <p><b>Status:</b> <span id="settingsOnline">Online</span></p>
+</div>
+<div class="card" style="margin-top:12px">
+  <h3 style="margin-top:0">Usuários e permissões</h3>
+  <p class="note">Nesta área vamos administrar funcionários, municípios liberados e módulos permitidos. A estrutura online já está preparada para essas permissões.</p>
+  <div id="settingsPermissions">
+  <div class="grid">
+    <label>Nome do funcionário<input id="empName" placeholder="Ex.: Maria"></label>
+    <label>E-mail<input id="empEmail" type="email" placeholder="funcionario@empresa.com"></label>
+    <label>Senha temporária<input id="empPassword" type="password" minlength="6" placeholder="Mínimo 6 caracteres"></label>
+  </div>
+  <button id="createEmployeeBtn" type="button">+ Criar funcionário</button>
+  <p class="note">Depois de criar, escolha abaixo os municípios e módulos que o funcionário poderá usar.</p>
+  <div id="employeeList" class="empty">Carregando usuários...</div>
+</div>
+</div>
+<div class="card" style="margin-top:12px">
+  <h3 style="margin-top:0">Sessão</h3>
+  <p class="note">Use “Sair da conta” ao terminar de usar um computador compartilhado.</p>
+  <button class="secondary" id="settingsLogout" type="button">🚪 Sair da conta</button>
+</div>
+</div></div>
+<div class="modal" id="helpModal"><div class="modal-card">
+<div class="modal-head"><div><h2 style="margin:0">Central de Ajuda</h2><p class="note" style="margin-top:4px">Manual completo do sistema: telas, botões, campos, cálculos, histórico e operação.</p></div><button class="closebtn" id="closeHelp">×</button></div>
+<div class="help-tip"><b>Como usar:</b> pesquise o nome de qualquer campo ou função, por exemplo: Agência, Operação, Competência, KM, Vínculo, Status, Receita, Resultado, Já pago, Histórico ou Recados.</div><div class="help-search"><input id="helpSearch" placeholder="Digite o nome de qualquer campo ou dúvida..."></div>
+<div id="helpList"></div>
+<div class="card" style="margin-top:12px"><b>Não encontrou?</b><p class="note" style="margin:6px 0 0">Esta central foi ampliada para documentar praticamente todos os campos e funções existentes nesta versão. Ela funciona sem internet. Na versão online, ainda poderemos acrescentar um assistente inteligente para interpretar perguntas livres.</p></div>
+</div></div>
+<div class="modal" id="messagesModal"><div class="modal-card">
+<div class="modal-head"><div><h2 style="margin:0">Recados da equipe</h2><p class="note" style="margin-top:4px">Espaço para as duas pessoas deixarem avisos uma para a outra.</p></div><button class="closebtn" id="closeMessages">×</button></div>
+<form id="messageForm"><div class="row2"><label>De<input id="msgFrom" required placeholder="Nome"></label><label>Para<input id="msgTo" required placeholder="Nome"></label></div><label>Recado<textarea id="msgText" required placeholder="Digite o recado..."></textarea></label><button class="primary">Salvar recado</button></form>
+<div id="messagesList"></div></div></div>
+<script>
+'use strict';
+
+const SUPABASE_URL='https://fqxslwjxuqklssgdwxug.supabase.co';
+const SUPABASE_KEY='sb_publishable_VH6Sxzm-4hZHJ0fxvxYV_A_-p3VMCwn';
+const AUTH_STORE='gef_online_session';
+function authHeaders(token){return {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(token||SUPABASE_KEY),'Content-Type':'application/json'}}
+function setAuthStatus(msg,bad=false){const e=document.getElementById('authStatus');if(e){e.textContent=msg;e.style.color=bad?'#b42318':'#344054'}}
+let ONLINE_ROLE='unknown';
+async function showApp(session){
+ document.getElementById('authGate').style.display='none';
+ const email=session.user?.email||'Usuário';
+ document.getElementById('onlineUser').textContent=email+' • Online';
+ const se=document.getElementById('settingsEmail'); if(se)se.textContent=email;
+ try{
+  const p=await api('profiles?select=role,full_name,active&id=eq.'+encodeURIComponent(session.user.id));
+  const profile=p?.[0];
+  ONLINE_ROLE=profile?.role==='admin'?'admin':'employee';
+  const role=ONLINE_ROLE==='admin'?'Administrador':'Funcionário';
+  document.body.classList.toggle('employee-mode',ONLINE_ROLE==='employee');
+  document.getElementById('settingsBtn').style.display=ONLINE_ROLE==='admin'?'':'none';
+  document.getElementById('syncBtn').textContent=ONLINE_ROLE==='admin'?'☁ Enviar':'☁ Enviar abastecimentos';
+  document.getElementById('onlineUser').textContent=role+' • '+email;
+  const sr=document.getElementById('settingsRole'); if(sr)sr.textContent=role;
+  const so=document.getElementById('settingsOnline'); if(so)so.textContent=profile?.active===false?'Inativo':'Online / Ativo';
+ }catch(e){
+  const sr=document.getElementById('settingsRole'); if(sr)sr.textContent='Usuário autenticado';
+ }
+}
+function showLogin(){document.getElementById('authGate').style.display='flex'}
+async function authRequest(path,body){const r=await fetch(SUPABASE_URL+'/auth/v1/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.msg||j.message||j.error_description||'Não foi possível concluir o acesso.');return j}
+async function loginOnline(){try{setAuthStatus('Entrando...');const email=document.getElementById('authEmail').value.trim().toLowerCase(),password=document.getElementById('authPassword').value;if(!email||!password)throw new Error('Informe e-mail e senha.');const j=await authRequest('token?grant_type=password',{email,password});localStorage.setItem(AUTH_STORE,JSON.stringify(j));await showApp(j);await loadCoreOnline();setAuthStatus('Acesso realizado.')}catch(e){setAuthStatus(e.message,true)}}
+async function signupOnline(){try{setAuthStatus('Criando acesso...');const email=document.getElementById('authEmail').value.trim().toLowerCase(),password=document.getElementById('authPassword').value;if(password.length<6)throw new Error('Crie uma senha com pelo menos 6 caracteres.');await authRequest('signup',{email,password,data:{full_name:email==='yellowrentacar@hotmail.com'?'Administrador':'Funcionário'}});setAuthStatus('Cadastro criado. Se o e-mail pedir confirmação, confirme e depois clique em Entrar.')}catch(e){setAuthStatus(e.message,true)}}
+function currentSession(){try{return JSON.parse(localStorage.getItem(AUTH_STORE)||'null')}catch(e){return null}}
+async function api(path,opts={}){const s=currentSession();if(!s?.access_token)throw new Error('Sessão expirada. Entre novamente.');const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...opts,headers:{...authHeaders(s.access_token),'Prefer':'return=representation',...(opts.headers||{})}});const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){j=txt}if(!r.ok)throw new Error((j&&j.message)||('Erro online '+r.status));return j}
+function syncMsg(t,bad=false){const e=$('syncStatus');if(e){e.textContent=t;e.style.background=bad?'#7f1d1d':'#ffffff22'}}
+async function syncEmployeeFuelings(){
+ try{
+  syncMsg('Enviando abastecimentos...');
+  const cities=await api('municipalities?select=id,name');
+  const cityMap=Object.fromEntries((cities||[]).map(c=>[c.name,c.id]));
+  const pending=(db.fuel||[]).filter(f=>f.pending);
+  if(!pending.length){syncMsg('✓ Nada pendente');alert('Não há novos abastecimentos pendentes para enviar.');return;}
+  for(const f of pending){
+   const v=db.vehicles.find(x=>x.id===f.vehicleId);
+   const mid=v&&cityMap[v.city];
+   if(!v||!mid) throw new Error('Veículo ou município não autorizado.');
+   await api('fuelings',{method:'POST',body:JSON.stringify({
+    municipality_id:mid, vehicle_id:v.id,
+    fueled_at:(f.date||new Date().toISOString().slice(0,10))+'T12:00:00',
+    station:f.station||'', liters:+f.liters||0, total_amount:+f.total||0,
+    km:+f.km||0, notes:f.notes||'', created_by:currentSession().user.id
+   })});
+  }
+  syncMsg('✓ Enviado');
+  await loadCoreOnline();
+  alert('Abastecimento(s) enviado(s) ao administrador.');
+ }catch(e){console.error(e);syncMsg('Falha no envio',true);alert('Não foi possível enviar: '+e.message);}
+}
+async function syncCoreOnline(){
+ if(ONLINE_ROLE==='employee') return syncEmployeeFuelings();
+ try{
+  syncMsg('Sincronizando...');
+  const cityMap={};
+  for(const name of allCities()){
+   let found=await api('municipalities?select=id,name&name=eq.'+encodeURIComponent(name));
+   let row=found?.[0];
+   if(!row){const made=await api('municipalities',{method:'POST',body:JSON.stringify({name,active:true})});row=made?.[0]}
+   if(row)cityMap[name]=row.id;
+  }
+  const vehicleMap={};
+  for(const v of db.vehicles){
+   const mid=cityMap[v.city]; if(!mid)continue;
+   let found=await api('vehicles?select=id,plate&municipality_id=eq.'+mid+'&plate=eq.'+encodeURIComponent(v.plate));
+   let row=found?.[0];
+   if(!row){const made=await api('vehicles',{method:'POST',body:JSON.stringify({municipality_id:mid,plate:v.plate||'',model:v.model||'',current_km:+v.km||0,active:true})});row=made?.[0]}
+   if(row)vehicleMap[v.id]=row.id;
+  }
+  for(const f of db.fuel){
+   const vid=vehicleMap[f.vehicleId]; if(!vid)continue;
+   const v=db.vehicles.find(x=>x.id===f.vehicleId),mid=v&&cityMap[v.city]; if(!mid)continue;
+   const marker=[f.date||'',f.station||'',+f.total||0,+f.km||0].join('|');
+   let existing=await api('fuelings?select=id,notes&vehicle_id=eq.'+vid+'&notes=eq.'+encodeURIComponent('IMPORT:'+marker));
+   if(existing?.length)continue;
+   await api('fuelings',{method:'POST',body:JSON.stringify({municipality_id:mid,vehicle_id:vid,fueled_at:(f.date||new Date().toISOString().slice(0,10))+'T12:00:00',station:f.station||'',liters:+f.liters||0,total_amount:+f.total||0,km:+f.km||0,notes:'IMPORT:'+marker,created_by:currentSession().user.id})});
+  }
+  syncMsg('✓ Sincronizado'); alert('Sincronização concluída: municípios, veículos e abastecimentos foram enviados para a base online. Os dados locais foram preservados.');
+ }catch(e){console.error(e);syncMsg('Falha na sincronização',true);alert('Não foi possível sincronizar agora: '+e.message+'\n\nSe aparecer erro de permissão, a base local continua preservada.');}
+}
+function logoutOnline(){localStorage.removeItem(AUTH_STORE);showLogin();document.getElementById('authPassword').value=''}
+
+
+async function adminUsers(body){
+ const s=JSON.parse(localStorage.getItem(AUTH_STORE)||'null');
+ if(!s?.access_token) throw new Error('Faça login novamente.');
+ const r=await fetch(SUPABASE_URL+'/functions/v1/admin-users',{
+  method:'POST',
+  headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.access_token,'apikey':SUPABASE_KEY},
+  body:JSON.stringify(body)
+ });
+ const j=await r.json().catch(()=>({}));
+ if(!r.ok) throw new Error(j.error||'Falha na administração de usuários.');
+ return j;
+}
+async function loadEmployees(){
+ const box=document.getElementById('employeeList'); if(!box)return;
+ try{
+  box.innerHTML='Carregando...';
+  const [out,citiesOnline]=await Promise.all([
+   adminUsers({action:'list'}),
+   api('municipalities?select=id,name,active&active=eq.true&order=name')
+  ]);
+  const cities=Array.isArray(citiesOnline)?citiesOnline:[];
+  const employees=(out.users||[]).filter(u=>u.profile?.role!=='admin');
+  if(!employees.length){box.innerHTML='<div class="empty">Nenhum funcionário cadastrado.</div>';return;}
+  box.innerHTML=employees.map(u=>{
+   const mids=u.municipalities||[], ps=u.permissions||[];
+   const cityChecks=cities.map(c=>`<label style="display:inline-block;margin:4px 12px 4px 0"><input type="checkbox" class="ep-city" data-u="${u.id}" value="${c.id}" ${mids.includes(c.id)?'checked':''}> ${esc(c.name)}</label>`).join('');
+   const mods=[['fuelings','Abastecimentos'],['work_days','Dias trabalhados'],['km','KM'],['maintenance','Manutenção'],['documents','Documentos']];
+   const modChecks=mods.map(([m,n])=>`<label style="display:inline-block;margin:4px 12px 4px 0"><input type="checkbox" class="ep-mod" data-u="${u.id}" value="${m}" ${ps.some(p=>p.module===m&&p.can_view)?'checked':''}> ${n}</label>`).join('');
+   return `<div class="card" style="margin:10px 0"><b>${esc(u.profile?.full_name||u.email||'Funcionário')}</b><div class="note">${esc(u.email||'')}</div><p><b>Municípios:</b><br>${cityChecks||'<span class="note">Não há municípios ativos no banco online.</span>'}</p><p><b>Módulos:</b><br>${modChecks}</p><button type="button" onclick="saveEmployeePermissions('${u.id}')">Salvar permissões</button></div>`;
+  }).join('');
+ }catch(e){box.innerHTML='<div class="empty">Erro: '+esc(e.message)+'</div>'}
+}
+async function createEmployee(){
+ try{
+  const full_name=document.getElementById('empName').value.trim(), email=document.getElementById('empEmail').value.trim(), password=document.getElementById('empPassword').value;
+  await adminUsers({action:'create',full_name,email,password});
+  document.getElementById('empName').value='';document.getElementById('empEmail').value='';document.getElementById('empPassword').value='';
+  alert('Funcionário criado. Agora defina os municípios e módulos permitidos.');
+  await loadEmployees();
+ }catch(e){alert(e.message)}
+}
+async function saveEmployeePermissions(uid){
+ try{
+  const municipality_ids=[...document.querySelectorAll(`.ep-city[data-u="${uid}"]:checked`)].map(x=>x.value);
+  const modules=[...document.querySelectorAll(`.ep-mod[data-u="${uid}"]:checked`)].map(x=>x.value);
+  await adminUsers({action:'permissions',user_id:uid,municipality_ids,modules});
+  alert('Permissões salvas.');
+  await loadEmployees();
+ }catch(e){alert(e.message)}
+}
+window.saveEmployeePermissions=saveEmployeePermissions;
+
+async function loadCoreOnline(){
+ const status=document.getElementById('syncStatus');
+ try{
+  status.textContent='☁ Baixando...';
+  const [cities,vehicles,fuelings]=await Promise.all([
+   api('municipalities?select=*&order=name'),
+   api('vehicles?select=*&order=created_at'),
+   api('fuelings?select=*&order=fueled_at.desc')
+  ]);
+  const cityById=Object.fromEntries((cities||[]).map(c=>[c.id,c.name]));
+  let local;
+  if(ONLINE_ROLE==='employee'){
+    // Funcionário recebe uma área de trabalho limpa, somente com dados permitidos pelo servidor.
+    local=structuredClone(blank);
+  }else{
+    local=load();
+  }
+  local.cities=(cities||[]).map(x=>({id:x.id,name:x.name,active:x.active!==false}));
+  local.vehicles=(vehicles||[]).map(x=>({
+    id:x.id, city:cityById[x.municipality_id]||'', plate:x.plate||'',
+    model:x.model||'', year:x.year||'', km:x.current_km??0, active:x.active!==false
+  }));
+  local.fuel=(fuelings||[]).map(x=>({
+    id:x.id, vehicleId:x.vehicle_id, date:(x.fueled_at||'').slice(0,10),
+    station:x.station||'', liters:Number(x.liters||0), total:Number(x.total_amount||0),
+    km:x.km??0, notes:x.notes||'', pending:false
+  }));
+  db=local;
+  if(ONLINE_ROLE!=='employee') save(local);
+  status.textContent='☁ Online atualizado';
+  if(ONLINE_ROLE==='employee'){
+    selectedCity=allCities()[0]||'';
+    activeSub='abastecimentos';
+    document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page==='municipios'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='municipios'));
+  }
+  render();
+  return true;
+ }catch(e){
+  console.error(e);
+  status.textContent='⚠ Falha ao atualizar';
+  return false;
+ }
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+ document.getElementById('loginBtn').onclick=loginOnline;
+ document.getElementById('signupBtn').onclick=signupOnline;
+ document.getElementById('logoutBtn').onclick=logoutOnline;
+ document.getElementById('settingsLogout').onclick=logoutOnline;
+ document.getElementById('syncBtn').onclick=syncCoreOnline;
+ document.getElementById('cloudLoadBtn').onclick=loadCoreOnline;
+ document.getElementById('settingsBtn').onclick=()=>{document.getElementById('settingsModal').classList.add('open');loadEmployees();};
+ document.getElementById('createEmployeeBtn').onclick=createEmployee;
+ document.getElementById('closeSettings').onclick=()=>document.getElementById('settingsModal').classList.remove('open');
+ document.getElementById('settingsModal').addEventListener('click',e=>{if(e.target.id==='settingsModal')e.currentTarget.classList.remove('open')});
+ try{const s=JSON.parse(localStorage.getItem(AUTH_STORE)||'null');if(s?.access_token&&s?.user){showApp(s).then(()=>loadCoreOnline());}else showLogin()}catch(e){showLogin()}
+});
+
+const $=id=>document.getElementById(id), STORE='gef_v3';
+const blank={vehicles:[],drivers:[],routes:[],links:[],fuel:[],attendance:[],expenses:[],maintenance:[],documents:[],receivables:[],cities:[],messages:[],driverPayments:[]};
+let db;try{db=JSON.parse(localStorage.getItem(STORE))||structuredClone(blank)}catch(e){db=structuredClone(blank)}
+for(const k of Object.keys(blank))if(!Array.isArray(db[k]))db[k]=[];
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+const money=v=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}), uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7), monthOf=d=>d?d.slice(0,7):'';
+const nowMonth=()=>new Date().toISOString().slice(0,7);
+function histMonth(){return $('historyMonth')?.value||''}
+function inHist(dateOrMonth){const h=histMonth();if(!h)return true;return (dateOrMonth||'').slice(0,7)===h}
+function recordMonth(x){return x.month||monthOf(x.date)||monthOf(x.createdAt)||''}
+
+function save(){if(ONLINE_ROLE!=='employee')localStorage.setItem(STORE,JSON.stringify(db));render()}
+function allCities(){return [...new Set([...db.cities.map(x=>x.name),...db.routes.map(x=>x.city),...db.vehicles.map(x=>x.city).filter(Boolean),...db.drivers.map(x=>x.city).filter(Boolean)])].filter(Boolean).sort((a,b)=>a.localeCompare(b,'pt-BR'))}
+function routeName(id){const r=db.routes.find(x=>x.id===id);return r?`${r.city} — ${r.route}`:'—'}
+function vehicleName(id){const v=db.vehicles.find(x=>x.id===id);return v?`${v.plate} — ${v.model}`:'—'}
+function driverName(id){const d=db.drivers.find(x=>x.id===id);return d?d.name:'—'}
+function cityRoutes(city){return db.routes.filter(r=>r.city===city)}
+function cityRouteIds(city){return new Set(cityRoutes(city).map(r=>r.id))}
+function cityLinks(city){const ids=cityRouteIds(city);return db.links.filter(l=>ids.has(l.routeId))}
+function cityVehicleIds(city){const ids=new Set(cityLinks(city).map(l=>l.vehicleId));db.vehicles.filter(v=>v.city===city).forEach(v=>ids.add(v.id));return ids}
+function cityDriverIds(city){const ids=new Set(cityLinks(city).map(l=>l.driverId));db.drivers.filter(d=>d.city===city).forEach(d=>ids.add(d.id));return ids}
+function tbl(heads,rows){if(!rows.length)return '<div class="empty">Nenhum registro ainda.</div>';return `<table><thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}<th></th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.paid?'paidrow':''}">${r.cells.map(c=>`<td>${c}</td>`).join('')}<td class="actions">${r.action||`<button onclick="removeItem('${r.type}','${r.id}')">Excluir</button>`}</td></tr>`).join('')}</tbody></table>`}
+window.removeItem=(type,id)=>{if(confirm('Excluir este registro?')){db[type]=db[type].filter(x=>x.id!==id);save()}}
+function drawBar(canvas,labels,values){if(!canvas)return;const dpr=window.devicePixelRatio||1,w=canvas.clientWidth||500,h=canvas.clientHeight||240;canvas.width=w*dpr;canvas.height=h*dpr;const c=canvas.getContext('2d');c.scale(dpr,dpr);c.clearRect(0,0,w,h);const pad=42,max=Math.max(1,...values.map(v=>Math.abs(v))),slot=(w-pad*2)/Math.max(labels.length,1),bw=slot*.55;c.strokeStyle='#cfd6e2';c.beginPath();c.moveTo(pad,12);c.lineTo(pad,h-pad);c.lineTo(w-10,h-pad);c.stroke();values.forEach((v,i)=>{const x=pad+slot*i+(slot-bw)/2,bh=Math.abs(v)/max*(h-pad-30),y=h-pad-bh;c.fillStyle=v<0?'#b42318':'#2563eb';c.fillRect(x,y,bw,bh);c.fillStyle='#475467';c.font='11px Arial';c.textAlign='center';c.fillText(labels[i],x+bw/2,h-pad+16);c.fillText((v/1000).toFixed(1)+'k',x+bw/2,Math.max(12,y-5))})}
+function metrics(city='',month=''){
+ const routes=db.routes.filter(r=>(!city||r.city===city)&&(!month||r.month===month)), rids=new Set(routes.map(r=>r.id));
+ const links=db.links.filter(l=>rids.has(l.routeId)), vids=new Set(links.map(l=>l.vehicleId)), dids=new Set(links.map(l=>l.driverId));
+ if(city){db.vehicles.filter(v=>v.city===city).forEach(v=>vids.add(v.id));db.drivers.filter(d=>d.city===city).forEach(d=>dids.add(d.id))}
+ const income=routes.reduce((s,r)=>s+(+r.income||0),0);
+ const fuel=db.fuel.filter(x=>(!month||monthOf(x.date)===month)&&(!city||vids.has(x.vehicleId))).reduce((s,x)=>s+(+x.total||0),0);
+ const drivers=db.drivers.filter(d=>dids.has(d.id)).reduce((s,d)=>s+(+d.value||0),0);
+ const expenses=db.expenses.filter(x=>(!month||monthOf(x.date)===month)&&(!city||rids.has(x.routeId)||vids.has(x.vehicleId))).reduce((s,x)=>s+(+x.value||0),0);
+ const maint=db.maintenance.filter(x=>(!month||monthOf(x.date)===month)&&(!city||vids.has(x.vehicleId))).reduce((s,x)=>s+(+x.value||0),0);
+ return {income,fuel,drivers,other:expenses+maint,result:income-fuel-drivers-expenses-maint}
+}
+let selectedCity=''; let activeSub='resumo';
+$('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-page]');if(!b)return;document.querySelectorAll('#nav button,.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.page).classList.add('active');render()});
+$('cityForm').addEventListener('submit',e=>{e.preventDefault();const name=$('newCity').value.trim();if(name&&!allCities().some(c=>c.toLowerCase()===name.toLowerCase()))db.cities.push({id:uid(),name});selectedCity=name;$('newCity').value='';save()});
+$('routeForm').addEventListener('submit',e=>{e.preventDefault();db.routes.push({id:uid(),city:$('rCity').value,contract:$('rContract').value.trim(),route:$('rRoute').value.trim(),income:+$('rIncome').value||0,month:$('rMonth').value,status:$('rStatus').value});e.target.reset();save()});
+window.setCityTab=city=>{selectedCity=city;activeSub='resumo';renderMunicipios()}
+window.setSubtab=id=>{activeSub=id;document.querySelectorAll('.subtab,.subpage').forEach(x=>x.classList.remove('active'));document.querySelector(`.subtab[data-sub="${id}"]`)?.classList.add('active');$('sub_'+id)?.classList.add('active')}
+window.togglePaid=id=>{
+ const month=histMonth()||nowMonth();
+ const existing=db.driverPayments.find(x=>x.driverId===id&&x.month===month);
+ if(existing) db.driverPayments=db.driverPayments.filter(x=>x.id!==existing.id);
+ else {const d=db.drivers.find(x=>x.id===id);db.driverPayments.push({id:uid(),driverId:id,month,value:+(d?.value||0),paidAt:new Date().toISOString()})}
+ save()
+}
+window.addCityRecord=(type)=>{
+ const city=selectedCity;if(!city)return;
+ const g=id=>document.getElementById(id)?.value||'';
+ if(type==='vehicle')db.vehicles.push({id:uid(),city,plate:g('cvPlate').trim().toUpperCase(),model:g('cvModel').trim(),km:+g('cvKm')||0});
+ if(type==='driver')db.drivers.push({id:uid(),city,name:g('cdName').trim(),cnh:g('cdCnh').trim(),value:+g('cdValue')||0,bank:g('cdBank').trim(),agency:g('cdAgency').trim(),account:g('cdAccount').trim(),operation:g('cdOperation').trim()});
+ if(type==='link')db.links.push({id:uid(),routeId:g('clRoute'),vehicleId:g('clVehicle'),driverId:g('clDriver'),start:g('clStart'),end:g('clEnd')});
+ if(type==='fuel')db.fuel.push({id:uid(),vehicleId:g('cfVehicle'),date:g('cfDate'),station:g('cfStation').trim(),liters:+g('cfLiters')||0,total:+g('cfTotal')||0,km:+g('cfKm')||0,pending:ONLINE_ROLE==='employee'});
+ if(type==='attendance')db.attendance.push({id:uid(),routeId:g('caRoute'),month:g('caMonth'),planned:+g('caPlanned')||0,worked:+g('caWorked')||0,obs:g('caObs').trim()});
+ if(type==='maintenance')db.maintenance.push({id:uid(),vehicleId:g('cmVehicle'),service:g('cmService').trim(),value:+g('cmValue')||0,date:g('cmDate'),nextKm:+g('cmNextKm')||0,nextDate:g('cmNextDate')});
+ if(type==='document')db.documents.push({id:uid(),ownerType:g('cdoType'),ownerId:g('cdoOwner'),name:g('cdoName').trim(),expiry:g('cdoExpiry'),obs:g('cdoObs').trim()});
+ if(type==='receivable')db.receivables.push({id:uid(),routeId:g('crRoute'),month:g('crMonth'),value:+g('crValue')||0,due:g('crDue'),status:g('crStatus')});
+ if(type==='expense')db.expenses.push({id:uid(),date:g('ceDate'),typeName:g('ceType').trim(),value:+g('ceValue')||0,vehicleId:g('ceVehicle'),routeId:g('ceRoute')});
+ save()
+}
+function options(items,label){return '<option value="">Selecione</option>'+items.map(x=>`<option value="${x.id}">${esc(label(x))}</option>`).join('')}
+function renderMunicipios(){
+ const cities=allCities();if(!selectedCity||!cities.includes(selectedCity))selectedCity=cities[0]||'';
+ $('cityTabs').innerHTML=cities.length?cities.map(c=>`<button class="city-tab ${c===selectedCity?'active':''}" onclick="setCityTab('${esc(c).replace(/'/g,"&#39;")}')">${esc(c)}</button>`).join(''):'<div class="empty">Cadastre o primeiro município.</div>';
+ if(!selectedCity){$('cityArea').innerHTML='';return}
+ const hm=histMonth();
+ const routes=cityRoutes(selectedCity).filter(r=>!hm||r.month===hm),rids=new Set(routes.map(r=>r.id));
+ const allCityLinks=cityLinks(selectedCity),links=allCityLinks.filter(l=>!hm||monthOf(l.start)===hm||(!l.start&&true)),vids=cityVehicleIds(selectedCity),dids=cityDriverIds(selectedCity);
+ const vehicles=db.vehicles.filter(v=>vids.has(v.id)),drivers=db.drivers.filter(d=>dids.has(d.id));
+ const fuel=db.fuel.filter(x=>vids.has(x.vehicleId)&&(!hm||monthOf(x.date)===hm)),att=db.attendance.filter(x=>rids.has(x.routeId)&&(!hm||x.month===hm)),maint=db.maintenance.filter(x=>vids.has(x.vehicleId)&&(!hm||monthOf(x.date)===hm));
+ const docs=db.documents.filter(x=>(x.ownerType==='Motorista'?dids:vids).has(x.ownerId)),rec=db.receivables.filter(x=>rids.has(x.routeId)&&(!hm||x.month===hm)),exp=db.expenses.filter(x=>(rids.has(x.routeId)||vids.has(x.vehicleId))&&(!hm||monthOf(x.date)===hm));
+ const m=metrics(selectedCity,hm), pending=rec.filter(x=>x.status!=='Pago').reduce((s,x)=>s+(+x.value||0),0);
+ const ro=options(routes,r=>`${r.contract} — ${r.route}`),vo=options(vehicles,v=>`${v.plate} — ${v.model}`),do_=options(drivers,d=>d.name);
+ $('cityArea').innerHTML=`
+ <div class="cards"><div class="card"><small>Receita</small><div class="value">${money(m.income)}</div></div><div class="card"><small>Despesas</small><div class="value">${money(m.fuel+m.drivers+m.other)}</div></div><div class="card"><small>Resultado</small><div class="value">${money(m.result)}</div></div><div class="card"><small>A receber</small><div class="value">${money(pending)}</div></div></div>
+ <div class="subtabs">
+ ${[['resumo','Resumo'],['veiculos','Veículos'],['motoristas','Motoristas'],['vinculos','Vínculos'],['abastecimentos','Abastecimentos'],['dias','Dias trabalhados'],['manutencao','Manutenção'],['documentos','Documentos'],['receber','Contas a receber'],['despesas','Despesas']].map(x=>`<button class="subtab ${x[0]===activeSub?'active':''}" data-sub="${x[0]}" onclick="setSubtab('${x[0]}')">${x[1]}</button>`).join('')}
+ </div>
+ <div id="sub_resumo" class="subpage ${activeSub==='resumo'?'active':''}"><div class="grid"><div class="card"><h3>Contratos / Rotas</h3>${tbl(['Contrato','Rota','Receita','Competência','Status'],routes.map(r=>({type:'routes',id:r.id,cells:[esc(r.contract),esc(r.route),money(r.income),esc(r.month),esc(r.status)]})))}</div><div class="card"><h3>Indicadores</h3><p>Veículos: <b>${vehicles.length}</b></p><p>Motoristas: <b>${drivers.length}</b></p><p>Vínculos: <b>${links.length}</b></p><p>Abastecimentos: <b>${fuel.length}</b></p></div></div></div>
+ <div id="sub_veiculos" class="subpage ${activeSub==='veiculos'?'active':''}"><div class="card"><h3>Cadastrar veículo em ${esc(selectedCity)}</h3><div class="row"><label>Placa<input id="cvPlate"></label><label>Modelo<input id="cvModel"></label><label>KM atual<input id="cvKm" type="number"></label></div><button class="primary" onclick="addCityRecord('vehicle')">Cadastrar</button></div>${tbl(['Placa','Modelo','KM atual'],vehicles.map(v=>({type:'vehicles',id:v.id,cells:[esc(v.plate),esc(v.model),v.km||0]})))}</div>
+ <div id="sub_motoristas" class="subpage ${activeSub==='motoristas'?'active':''}"><div class="card"><h3>Cadastrar motorista em ${esc(selectedCity)}</h3><div class="row"><label>Nome<input id="cdName"></label><label>CNH<input id="cdCnh"></label><label>Valor mensal<input id="cdValue" type="number" step=".01"></label></div><div class="row"><label>Banco<input id="cdBank"></label><label>Agência<input id="cdAgency"></label><label>Conta<input id="cdAccount"></label></div><div class="row2"><label>Operação<input id="cdOperation" placeholder="Ex.: 001, 013..."></label><div></div></div><button class="primary" onclick="addCityRecord('driver')">Cadastrar motorista</button></div>${tbl(['Pago','Nome','CNH','Valor','Banco','Agência','Conta','Operação'],drivers.map(d=>{const payMonth=hm||nowMonth(),paid=db.driverPayments.some(p=>p.driverId===d.id&&p.month===payMonth);return{type:'drivers',id:d.id,paid,cells:[`<label class="checkpaid"><input type="checkbox" ${paid?'checked':''} onchange="togglePaid('${d.id}')"> ${paid?'Já pago':'Pendente'} (${payMonth.slice(5,7)}/${payMonth.slice(0,4)})</label>`,esc(d.name),esc(d.cnh),money(d.value),esc(d.bank||'—'),esc(d.agency||'—'),esc(d.account||'—'),esc(d.operation||'—')]}}))}</div>
+ <div id="sub_vinculos" class="subpage ${activeSub==='vinculos'?'active':''}"><div class="card"><div class="row"><label>Rota<select id="clRoute">${ro}</select></label><label>Veículo<select id="clVehicle">${vo}</select></label><label>Motorista<select id="clDriver">${do_}</select></label></div><div class="row2"><label>Início<input id="clStart" type="date"></label><label>Fim<input id="clEnd" type="date"></label></div><button class="primary" onclick="addCityRecord('link')">Criar vínculo</button></div>${tbl(['Rota','Veículo','Motorista','Início','Fim'],links.map(x=>({type:'links',id:x.id,cells:[esc(routeName(x.routeId)),esc(vehicleName(x.vehicleId)),esc(driverName(x.driverId)),esc(x.start),esc(x.end||'Ativo')]})))}</div>
+ <div id="sub_abastecimentos" class="subpage ${activeSub==='abastecimentos'?'active':''}"><div class="card"><div class="row"><label>Veículo<select id="cfVehicle">${vo}</select></label><label>Data<input id="cfDate" type="date"></label><label>Posto<input id="cfStation"></label></div><div class="row"><label>Litros<input id="cfLiters" type="number" step=".01"></label><label>Valor total<input id="cfTotal" type="number" step=".01"></label><label>KM<input id="cfKm" type="number"></label></div><button class="primary" onclick="addCityRecord('fuel')">Lançar</button></div>${tbl(['Veículo','Data','Posto','Litros','Total','KM'],fuel.map(x=>({type:'fuel',id:x.id,cells:[esc(vehicleName(x.vehicleId)),esc(x.date),esc(x.station),x.liters,money(x.total),x.km]})))}</div>
+ <div id="sub_dias" class="subpage ${activeSub==='dias'?'active':''}"><div class="card"><div class="row"><label>Rota<select id="caRoute">${ro}</select></label><label>Competência<input id="caMonth" type="month"></label><label>Dias previstos<input id="caPlanned" type="number"></label></div><div class="row2"><label>Dias trabalhados<input id="caWorked" type="number"></label><label>Observação<input id="caObs"></label></div><button class="primary" onclick="addCityRecord('attendance')">Registrar</button></div>${tbl(['Rota','Competência','Previstos','Trabalhados','Observação'],att.map(x=>({type:'attendance',id:x.id,cells:[esc(routeName(x.routeId)),esc(x.month),x.planned,x.worked,esc(x.obs)]})))}</div>
+ <div id="sub_manutencao" class="subpage ${activeSub==='manutencao'?'active':''}"><div class="card"><div class="row"><label>Veículo<select id="cmVehicle">${vo}</select></label><label>Serviço<input id="cmService"></label><label>Valor<input id="cmValue" type="number" step=".01"></label></div><div class="row"><label>Data<input id="cmDate" type="date"></label><label>Próxima em KM<input id="cmNextKm" type="number"></label><label>Próxima data<input id="cmNextDate" type="date"></label></div><button class="primary" onclick="addCityRecord('maintenance')">Registrar</button></div>${tbl(['Veículo','Serviço','Data','Valor','Próx. KM','Próx. data'],maint.map(x=>({type:'maintenance',id:x.id,cells:[esc(vehicleName(x.vehicleId)),esc(x.service),esc(x.date),money(x.value),x.nextKm||'—',esc(x.nextDate||'—')]})))}</div>
+ <div id="sub_documentos" class="subpage ${activeSub==='documentos'?'active':''}"><div class="card"><div class="row"><label>Tipo<select id="cdoType" onchange="renderMunicipios()"><option>Veículo</option><option>Motorista</option></select></label><label>Responsável<select id="cdoOwner">${vo}</select></label><label>Documento<input id="cdoName"></label></div><div class="row2"><label>Vencimento<input id="cdoExpiry" type="date"></label><label>Observação<input id="cdoObs"></label></div><button class="primary" onclick="addCityRecord('document')">Cadastrar</button></div>${tbl(['Tipo','Responsável','Documento','Vencimento','Observação'],docs.map(x=>({type:'documents',id:x.id,cells:[esc(x.ownerType),esc(x.ownerType==='Motorista'?driverName(x.ownerId):vehicleName(x.ownerId)),esc(x.name),esc(x.expiry),esc(x.obs)]})))}</div>
+ <div id="sub_receber" class="subpage ${activeSub==='receber'?'active':''}"><div class="card"><div class="row"><label>Rota<select id="crRoute">${ro}</select></label><label>Competência<input id="crMonth" type="month"></label><label>Valor<input id="crValue" type="number" step=".01"></label></div><div class="row2"><label>Vencimento<input id="crDue" type="date"></label><label>Status<select id="crStatus"><option>Pendente</option><option>Pago</option></select></label></div><button class="primary" onclick="addCityRecord('receivable')">Lançar</button></div>${tbl(['Rota','Competência','Valor','Vencimento','Status'],rec.map(x=>({type:'receivables',id:x.id,cells:[esc(routeName(x.routeId)),esc(x.month),money(x.value),esc(x.due),`<span class="badge ${x.status==='Pago'?'good':'warning'}">${esc(x.status)}</span>`]})))}</div>
+ <div id="sub_despesas" class="subpage ${activeSub==='despesas'?'active':''}"><div class="card"><div class="row"><label>Data<input id="ceDate" type="date"></label><label>Tipo<input id="ceType"></label><label>Valor<input id="ceValue" type="number" step=".01"></label></div><div class="row2"><label>Veículo<select id="ceVehicle"><option value="">Nenhum</option>${vehicles.map(v=>`<option value="${v.id}">${esc(v.plate)} — ${esc(v.model)}</option>`).join('')}</select></label><label>Rota<select id="ceRoute"><option value="">Nenhuma</option>${routes.map(r=>`<option value="${r.id}">${esc(r.route)}</option>`).join('')}</select></label></div><button class="primary" onclick="addCityRecord('expense')">Lançar</button></div>${tbl(['Data','Tipo','Valor','Veículo','Rota'],exp.map(x=>({type:'expenses',id:x.id,cells:[esc(x.date),esc(x.typeName),money(x.value),esc(vehicleName(x.vehicleId)),esc(routeName(x.routeId))]})))}</div>`;
+}
+
+function renderMonthlyHistory(){
+ const hm=histMonth(), box=$('monthlyHistory');
+ if(!box)return;
+ if(!hm){box.innerHTML='<div class="empty">Escolha um mês acima para consultar o histórico completo.</div>';return}
+ const routeMap=new Map(db.routes.map(r=>[r.id,r]));
+ const vidsForMonth=new Set(db.links.filter(l=>{const r=routeMap.get(l.routeId);return r&&r.month===hm}).map(l=>l.vehicleId));
+ const didsForMonth=new Set(db.links.filter(l=>{const r=routeMap.get(l.routeId);return r&&r.month===hm}).map(l=>l.driverId));
+ const sections=[];
+ const routes=db.routes.filter(r=>r.month===hm);
+ sections.push('<h4>Contratos / Rotas</h4>'+tbl(['Município','Contrato','Rota','Receita','Status'],routes.map(r=>({type:'routes',id:r.id,cells:[esc(r.city),esc(r.contract),esc(r.route),money(r.income),esc(r.status)]}))));
+ const fuels=db.fuel.filter(x=>monthOf(x.date)===hm);
+ sections.push('<h4>Abastecimentos</h4>'+tbl(['Data','Veículo','Posto','Litros','Valor','KM'],fuels.map(x=>({type:'fuel',id:x.id,cells:[esc(x.date),esc(vehicleName(x.vehicleId)),esc(x.station),x.liters,money(x.total),x.km]}))));
+ const atts=db.attendance.filter(x=>x.month===hm);
+ sections.push('<h4>Dias trabalhados</h4>'+tbl(['Rota','Previstos','Trabalhados','Observação'],atts.map(x=>({type:'attendance',id:x.id,cells:[esc(routeName(x.routeId)),x.planned,x.worked,esc(x.obs)]}))));
+ const maint=db.maintenance.filter(x=>monthOf(x.date)===hm);
+ sections.push('<h4>Manutenções</h4>'+tbl(['Data','Veículo','Serviço','Valor'],maint.map(x=>({type:'maintenance',id:x.id,cells:[esc(x.date),esc(vehicleName(x.vehicleId)),esc(x.service),money(x.value)]}))));
+ const exps=db.expenses.filter(x=>monthOf(x.date)===hm);
+ sections.push('<h4>Despesas</h4>'+tbl(['Data','Tipo','Valor','Veículo','Rota'],exps.map(x=>({type:'expenses',id:x.id,cells:[esc(x.date),esc(x.typeName),money(x.value),esc(vehicleName(x.vehicleId)),esc(routeName(x.routeId))]}))));
+ const recs=db.receivables.filter(x=>x.month===hm);
+ sections.push('<h4>Contas a receber</h4>'+tbl(['Rota','Valor','Vencimento','Status'],recs.map(x=>({type:'receivables',id:x.id,cells:[esc(routeName(x.routeId)),money(x.value),esc(x.due),esc(x.status)]}))));
+ const pays=db.driverPayments.filter(x=>x.month===hm);
+ sections.push('<h4>Pagamentos de motoristas</h4>'+tbl(['Motorista','Valor','Pago em'],pays.map(x=>({type:'driverPayments',id:x.id,cells:[esc(driverName(x.driverId)),money(x.value),new Date(x.paidAt).toLocaleString('pt-BR')]}))));
+ const msgs=db.messages.filter(x=>monthOf(x.createdAt)===hm);
+ sections.push('<h4>Recados registrados</h4>'+tbl(['De','Para','Recado','Enviado','Leitura'],msgs.map(x=>({type:'messages',id:x.id,cells:[esc(x.from),esc(x.to),esc(x.text),new Date(x.createdAt).toLocaleString('pt-BR'),x.readAt?'Lido em '+new Date(x.readAt).toLocaleString('pt-BR'):'Ainda não lido']}))));
+ box.innerHTML=sections.join('');
+}
+
+function render(){
+ const hm=histMonth();if($('historyLabel'))$('historyLabel').textContent=hm?`Exibindo histórico completo: ${hm.slice(5,7)}/${hm.slice(0,4)}`:'Todos os períodos';renderMonthlyHistory();
+ const cities=allCities(),cityOpts='<option value="">Selecione</option>'+cities.map(c=>`<option>${esc(c)}</option>`).join('');
+ $('rCity').innerHTML=cityOpts;
+ const cur=$('finCity').value;$('finCity').innerHTML='<option value="">Todos</option>'+cities.map(c=>`<option ${c===cur?'selected':''}>${esc(c)}</option>`).join('');
+ renderMunicipios();
+ $('routesTable').innerHTML=tbl(['Município','Contrato','Rota','Receita','Competência','Status'],db.routes.filter(r=>!histMonth()||r.month===histMonth()).map(r=>({type:'routes',id:r.id,cells:[esc(r.city),esc(r.contract),esc(r.route),money(r.income),esc(r.month),esc(r.status)]})));
+ $('receivablesTable').innerHTML=tbl(['Município','Rota','Competência','Valor','Vencimento','Status'],db.receivables.filter(x=>!histMonth()||x.month===histMonth()).map(x=>{const r=db.routes.find(r=>r.id===x.routeId);return{type:'receivables',id:x.id,cells:[esc(r?.city||'—'),esc(routeName(x.routeId)),esc(x.month),money(x.value),esc(x.due),`<span class="badge ${x.status==='Pago'?'good':'warning'}">${esc(x.status)}</span>`]}}));
+ const gm=metrics('',histMonth()), pending=db.receivables.filter(x=>(!histMonth()||x.month===histMonth())).filter(x=>x.status!=='Pago').reduce((s,x)=>s+(+x.value||0),0);
+ $('pIncome').textContent=money(gm.income);$('pCosts').textContent=money(gm.fuel+gm.drivers+gm.other);$('pResult').textContent=money(gm.result);$('pReceivable').textContent=money(pending);drawBar($('generalChart'),['Entradas','Despesas','Resultado'],[gm.income,gm.fuel+gm.drivers+gm.other,gm.result]);
+ $('citySummary').innerHTML=cities.length?`<table><thead><tr><th>Município</th><th>Entradas</th><th>Despesas</th><th>Resultado</th></tr></thead><tbody>${cities.map(c=>{const m=metrics(c,histMonth());return`<tr><td>${esc(c)}</td><td>${money(m.income)}</td><td>${money(m.fuel+m.drivers+m.other)}</td><td>${money(m.result)}</td></tr>`}).join('')}</tbody></table>`:'<div class="empty">Nenhum município cadastrado.</div>';
+ const mf=$('finMonth').value,cf=$('finCity').value,fm=metrics(cf,mf);$('fIncome').textContent=money(fm.income);$('fFuel').textContent=money(fm.fuel);$('fDrivers').textContent=money(fm.drivers);$('fOther').textContent=money(fm.other);$('fResult').textContent=money(fm.result);
+ const list=cf?[cf]:cities;$('financeCityTable').innerHTML=`<table><thead><tr><th>Município</th><th>Entradas</th><th>Combustível</th><th>Motoristas</th><th>Outros</th><th>Resultado</th></tr></thead><tbody>${list.map(c=>{const m=metrics(c,mf);return`<tr><td>${esc(c)}</td><td>${money(m.income)}</td><td>${money(m.fuel)}</td><td>${money(m.drivers)}</td><td>${money(m.other)}</td><td>${money(m.result)}</td></tr>`}).join('')}</tbody></table>`;
+}
+$('finMonth').addEventListener('change',render);$('finCity').addEventListener('change',render);$('clearFin').addEventListener('click',()=>{$('finMonth').value='';$('finCity').value='';render()});$('printBtn').addEventListener('click',()=>window.print());
+$('exportCSV').addEventListener('click',()=>{const rows=[['Município','Entradas','Combustível','Motoristas','Outros','Resultado'],...allCities().map(c=>{const m=metrics(c,$('finMonth').value);return[c,m.income,m.fuel,m.drivers,m.other,m.result]})];const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='financeiro_geral_frota.csv';a.click();URL.revokeObjectURL(a.href)});
+
+function renderMessages(){
+ const list=[...db.messages].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+ $('msgCount').textContent=list.length;
+ $('messagesList').innerHTML=list.length?list.map(m=>`<div class="message ${m.readAt?'':'unread'}"><b>${esc(m.from)}</b> → <b>${esc(m.to)}</b><br><small>Enviado: ${new Date(m.createdAt).toLocaleString('pt-BR')}</small><p>${esc(m.text)}</p><div class="read-status ${m.readAt?'read':'unread'}">${m.readAt?'✓✓ Lido em '+new Date(m.readAt).toLocaleString('pt-BR'):'○ Ainda não lido'}</div><div class="msg-actions">${m.readAt?'':`<button class="primary" type="button" onclick="markMessageRead('${m.id}')">✓ Marcar como lido</button>`}<button class="secondary" type="button" onclick="deleteMessage('${m.id}')">Excluir</button></div></div>`).join(''):'<div class="empty">Nenhum recado ainda.</div>';
+}
+window.markMessageRead=id=>{const m=db.messages.find(x=>x.id===id);if(m&&!m.readAt){m.readAt=new Date().toISOString();save();renderMessages();render()}};
+window.deleteMessage=id=>{db.messages=db.messages.filter(x=>x.id!==id);save();renderMessages();render()}
+$('messagesBtn').addEventListener('click',()=>{$('messagesModal').classList.add('open');renderMessages()});
+$('closeMessages').addEventListener('click',()=>$('messagesModal').classList.remove('open'));
+$('messagesModal').addEventListener('click',e=>{if(e.target===$('messagesModal'))$('messagesModal').classList.remove('open')});
+$('messageForm').addEventListener('submit',e=>{e.preventDefault();db.messages.push({id:uid(),from:$('msgFrom').value.trim(),to:$('msgTo').value.trim(),text:$('msgText').value.trim(),createdAt:new Date().toISOString(),readAt:null});e.target.reset();save();renderMessages();render()});
+$('historyMonth').addEventListener('change',render);
+$('historyCurrent').addEventListener('click',()=>{$('historyMonth').value=nowMonth();render()});
+
+
+const HELP=[
+['PAINEL — O que é?','É a visão geral da empresa. Consolida os números de todos os municípios e mostra entradas, despesas, resultado e valores a receber.'],
+['Entradas gerais','Soma das receitas cadastradas nos contratos/rotas dentro do período selecionado.'],
+['Despesas gerais','Soma dos custos considerados pelo sistema no período: combustível, motoristas, manutenções e despesas extras.'],
+['Resultado geral','Diferença entre Entradas gerais e Despesas gerais. Valor positivo indica sobra operacional no cadastro; valor negativo indica que as despesas superaram as entradas.'],
+['Total a receber','Soma das contas a receber que ainda não estão marcadas como Pago.'],
+['Resultado por município','Tabela que separa entradas, despesas e resultado de cada município para comparação e acompanhamento.'],
+
+['MUNICÍPIOS — O que é?','É a área principal de organização operacional. Cada município mantém sua própria frota, motoristas, vínculos, abastecimentos, frequência, manutenção, documentos, contas a receber e despesas.'],
+['Novo município','Campo usado para cadastrar uma nova cidade atendida pela empresa. Exemplo: Catarina.'],
+['Resumo do município','Mostra receita, despesas, resultado, contas a receber, contratos/rotas e indicadores somente do município selecionado.'],
+
+['VEÍCULOS — O que é?','Cadastro dos veículos usados naquele município.'],
+['Placa','Identificação oficial do veículo. Digite a placa correspondente ao veículo cadastrado.'],
+['Modelo do veículo','Nome/modelo do veículo. Exemplo: Sprinter, Ducato, Volare.'],
+['KM atual','Quilometragem atual do veículo. Serve como referência operacional e para manutenção.'],
+['Cadastrar veículo','Salva o veículo dentro do município que está aberto.'],
+
+['MOTORISTAS — O que é?','Cadastro dos motoristas daquele município, incluindo remuneração e dados bancários.'],
+['Nome do motorista','Nome da pessoa responsável pela condução do veículo.'],
+['CNH','Número da Carteira Nacional de Habilitação do motorista.'],
+['Valor mensal do motorista','Valor mensal cadastrado como custo daquele motorista. Esse valor participa do cálculo financeiro quando o motorista está vinculado às rotas consideradas no período.'],
+['Banco','Nome ou número do banco utilizado pelo motorista para receber pagamento.'],
+['Agência','Número da agência bancária do motorista.'],
+['Conta','Número da conta bancária para pagamento.'],
+['Operação','Código de operação da conta quando o banco utilizar esse dado. Exemplo comum: tipos de conta/operação definidos pela instituição bancária.'],
+['Já pago','Caixa usada para registrar que o motorista foi pago na competência consultada. O controle é mensal: marcar setembro não deve marcar outubro automaticamente.'],
+['Pendente no motorista','Indica que ainda não existe registro de pagamento daquele motorista para o mês exibido.'],
+
+['CONTRATOS — O que é?','Cadastro geral dos contratos e rotas da empresa. Cada contrato/rota precisa ser associado a um município.'],
+['Município no contrato','Define a qual município aquele contrato ou rota pertence.'],
+['Contrato','Identificação ou nome/número do contrato administrativo.'],
+['Rota','Identificação da rota de transporte escolar.'],
+['Receita mensal','Valor de receita cadastrado para aquela rota e competência. É usado nas entradas do financeiro.'],
+['Competência','Mês e ano aos quais o lançamento pertence. Exemplo: 09/2026 significa setembro de 2026. É fundamental para o histórico mensal.'],
+['Status do contrato','Situação da rota/contrato. Ativo significa em operação; Suspenso indica interrupção temporária; Encerrado indica término.'],
+
+['VÍNCULOS — O que é?','Liga uma rota a um veículo e a um motorista. Isso permite ao sistema saber quem e qual veículo estão trabalhando naquela operação.'],
+['Rota no vínculo','Rota que receberá o veículo e o motorista selecionados.'],
+['Veículo no vínculo','Veículo designado para atender a rota.'],
+['Motorista no vínculo','Motorista designado para atender a rota.'],
+['Início do vínculo','Data em que o motorista/veículo começou a atuar na rota.'],
+['Fim do vínculo','Data em que o vínculo terminou. Se ficar sem data, o vínculo pode ser tratado como ativo.'],
+
+['ABASTECIMENTOS — O que é?','Registra combustível abastecido nos veículos e alimenta o custo de combustível do financeiro.'],
+['Veículo no abastecimento','Veículo que recebeu o combustível.'],
+['Data do abastecimento','Data em que o abastecimento ocorreu. Essa data determina em qual mês o gasto aparece no histórico.'],
+['Posto','Nome do posto onde o veículo foi abastecido.'],
+['Litros','Quantidade de combustível abastecida.'],
+['Valor total do abastecimento','Valor total pago naquele abastecimento. Esse valor entra nas despesas de combustível.'],
+['KM do abastecimento','Quilometragem do veículo no momento do abastecimento.'],
+
+['DIAS TRABALHADOS — O que é?','Controle de frequência operacional das rotas por competência.'],
+['Rota em dias trabalhados','Rota cuja frequência está sendo registrada.'],
+['Competência em dias trabalhados','Mês e ano da frequência registrada.'],
+['Dias previstos','Quantidade de dias que estavam previstos para operação naquele mês.'],
+['Dias trabalhados','Quantidade de dias efetivamente trabalhados.'],
+['Observação da frequência','Campo livre para registrar faltas, paralisações, substituições ou outra informação relevante.'],
+
+['MANUTENÇÃO — O que é?','Registra serviços e custos de manutenção dos veículos.'],
+['Veículo na manutenção','Veículo que recebeu o serviço.'],
+['Serviço','Descrição da manutenção realizada. Exemplo: troca de óleo, freios, suspensão.'],
+['Valor da manutenção','Custo do serviço. Entra nas despesas do período correspondente à data lançada.'],
+['Data da manutenção','Data em que o serviço foi realizado. Define o mês do histórico e do custo.'],
+['Próxima em KM','Quilometragem prevista para a próxima manutenção do mesmo tipo.'],
+['Próxima data','Data prevista para a próxima manutenção.'],
+
+['DOCUMENTOS — O que é?','Cadastro de documentos relacionados a veículos ou motoristas e seus vencimentos.'],
+['Tipo de documento — responsável','Define se o documento pertence a um Veículo ou a um Motorista.'],
+['Responsável pelo documento','Veículo ou motorista ao qual o documento pertence.'],
+['Documento','Nome do documento. Exemplos: CRLV, CNH, seguro.'],
+['Vencimento do documento','Data em que o documento vence.'],
+['Observação do documento','Informação complementar sobre o documento ou seu vencimento.'],
+
+['CONTAS A RECEBER — O que é?','Registra valores que a empresa tem para receber das rotas/contratos. O menu principal reúne os lançamentos dos municípios.'],
+['Rota / contrato da conta a receber','Define de qual operação vem aquele recebimento.'],
+['Competência da conta a receber','Mês e ano ao qual o valor se refere.'],
+['Valor a receber','Valor financeiro esperado para recebimento.'],
+['Vencimento da conta','Data prevista para pagamento/recebimento.'],
+['Status Pendente','Indica que a conta ainda não foi registrada como recebida/paga.'],
+['Status Pago','Indica que a conta foi concluída como paga/recebida no controle.'],
+
+['DESPESAS — O que é?','Área para registrar custos que não são lançados diretamente como combustível, motorista ou manutenção.'],
+['Data da despesa','Data em que a despesa ocorreu. Determina em qual mês ela aparece no histórico.'],
+['Tipo da despesa','Descrição do gasto. Exemplos: pneu, pedágio, lavagem, material ou outro custo.'],
+['Valor da despesa','Valor gasto. Entra no cálculo das despesas do período.'],
+['Veículo opcional na despesa','Permite associar a despesa a um veículo. Use quando o gasto for específico daquele veículo.'],
+['Rota opcional na despesa','Permite associar a despesa a uma rota. Use quando o gasto for específico daquela rota.'],
+
+['FINANCEIRO — O que é?','Área consolidada que soma os valores cadastrados nos municípios e permite filtros por competência e município.'],
+['Competência no Financeiro','Filtro para visualizar somente os valores de determinado mês e ano.'],
+['Município no Financeiro','Filtro para visualizar um município específico. Em Todos, o sistema consolida os municípios.'],
+['Entradas no Financeiro','Receitas dos contratos/rotas considerados pelo filtro atual.'],
+['Combustível no Financeiro','Soma dos abastecimentos considerados no período e município filtrados.'],
+['Motoristas no Financeiro','Custo dos motoristas vinculados às rotas consideradas pelo filtro.'],
+['Outras despesas no Financeiro','Soma das despesas extras e manutenções consideradas pelo filtro.'],
+['Resultado operacional','Entradas menos combustível, motoristas e outras despesas.'],
+['Limpar filtros','Remove os filtros do Financeiro para retornar à visão consolidada.'],
+['Exportar Excel (CSV)','Gera um arquivo CSV com dados financeiros, que pode ser aberto no Excel.'],
+['Gerar PDF / Imprimir','Abre a impressão do navegador. Para gerar PDF, escolha a opção Salvar como PDF na janela de impressão.'],
+
+['HISTÓRICO MENSAL — O que é?','Permite voltar a uma competência antiga e consultar os lançamentos registrados naquele mês.'],
+['Histórico por mês','O sistema abre automaticamente no mês atual. Para consultar outro período, escolha o mês e o ano desejados. Exemplo: em 2027 você poderá selecionar 08/2026 para consultar agosto de 2026.'],
+['Histórico completo do período','Reúne os lançamentos encontrados para o mês selecionado, como contratos/rotas, abastecimentos, dias trabalhados, manutenções, despesas, contas a receber, pagamentos de motoristas e recados registrados.'],
+['Mês atual','Retorna imediatamente ao mês atual.'],
+['Por que uma despesa aparece em determinado mês?','Despesas, abastecimentos e manutenções usam suas datas para determinar o mês. Contratos, frequência e contas a receber usam a competência cadastrada.'],
+
+['RECADOS — O que é?','Área no canto superior direito para as pessoas que utilizam o sistema deixarem mensagens entre si.'],
+['De — Recados','Nome da pessoa que está deixando o recado.'],
+['Para — Recados','Nome da pessoa que deve receber/ler o recado.'],
+['Recado','Texto da mensagem. O sistema também registra data e horário.'],
+['Ainda não lido — Recados','Indica que o destinatário ainda não confirmou a leitura daquele recado.'],
+['Marcar como lido — Recados','Ao ler a mensagem, o destinatário clica neste botão. O sistema registra a data e o horário da leitura.'],
+['✓✓ Lido — Recados','Confirma que o recado foi marcado como lido e mostra quando a leitura foi registrada.'],
+['Excluir recado','Remove o recado armazenado. Use apenas quando ele não precisar mais permanecer no histórico.'],
+
+['CONFIGURAÇÕES — O que é?','Área administrativa para visualizar a conta conectada e, nas próximas etapas, gerenciar funcionários, municípios liberados e permissões por módulo.'],
+['SAIR — O que faz?','Encerra a sessão online neste navegador e retorna à tela de login. Use principalmente em computador compartilhado.'],
+['AJUDA — O que é?','Esta própria Central de Ajuda. Use a pesquisa para localizar explicações de telas, campos e funções.'],
+['Como pesquisar na Ajuda?','Digite o nome do campo ou assunto. Exemplos: Agência, KM, Competência, Já pago, Resultado, Documento, Vínculo ou Abastecimento.'],
+
+['SALVAMENTO DOS DADOS','Nesta versão os registros ficam no armazenamento local do navegador deste computador. Eles ainda não formam um banco de dados online compartilhado.'],
+['Se eu fechar o navegador perco os dados?','Normalmente não: o sistema usa armazenamento local do navegador. Porém, apagar os dados do navegador, usar outro navegador/computador ou certas limpezas do sistema pode impedir o acesso a esses registros. A futura versão online terá banco de dados próprio.'],
+['Duas pessoas conseguem usar ao mesmo tempo?','Nesta versão local, cada navegador/computador tem seu próprio armazenamento. Para duas pessoas trabalharem realmente na mesma base em tempo real, é necessária a etapa online com login e banco de dados compartilhado.'],
+['Uso no celular','A interface é responsiva para telas menores. A etapa futura de PWA/online permitirá instalação com aparência de aplicativo e sincronização entre dispositivos.'],
+['Excluir registro','O botão Excluir remove o registro correspondente após confirmação. Antes de excluir informações históricas importantes, confirme se realmente não serão mais necessárias.'],
+['O que significa R$?','Valores monetários do sistema são apresentados em reais brasileiros.'],
+['O que significa KM?','Quilômetro. No sistema é usado principalmente para quilometragem dos veículos e planejamento de manutenção.']
+]
+function renderHelp(q=''){
+ const term=(q||'').trim().toLocaleLowerCase('pt-BR');
+ const items=HELP.filter(x=>!term||(`${x[0]} ${x[1]}`).toLocaleLowerCase('pt-BR').includes(term));
+ $('helpList').innerHTML=items.length?items.map((x,i)=>`<div class="help-item"><button type="button" class="help-q" onclick="this.parentElement.classList.toggle('open')">${esc(x[0])}</button><div class="help-a">${esc(x[1])}</div></div>`).join(''):'<div class="empty">Não encontrei essa dúvida no manual desta versão. Tente palavras como motorista, financeiro, histórico, abastecimento, recado ou município.</div>';
+}
+$('helpBtn').addEventListener('click',()=>{$('helpModal').classList.add('open');$('helpSearch').value='';renderHelp();setTimeout(()=>$('helpSearch').focus(),50)});
+$('closeHelp').addEventListener('click',()=>$('helpModal').classList.remove('open'));
+$('helpModal').addEventListener('click',e=>{if(e.target===$('helpModal'))$('helpModal').classList.remove('open')});
+$('helpSearch').addEventListener('input',e=>renderHelp(e.target.value));
+
+$('historyMonth').value=nowMonth();
+render();renderMessages();renderHelp();
+</script>
+</body></html>
