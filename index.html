@@ -87,7 +87,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
 <button data-page="financeiro">Financeiro</button>
 </nav>
 <main>
-<div class="historybar"><label>Histórico por mês<input id="historyMonth" type="month"></label><button class="secondary" id="historyCurrent" type="button">Mês atual</button><span class="history-tag" id="historyLabel">Todos os períodos</span></div>
+<div class="historybar"><label>Consultar movimentação por data<input id="historyDate" type="date"></label><button class="secondary" id="historyCurrent" type="button">Hoje</button><span class="history-tag" id="historyLabel">Movimentação de hoje</span></div>
 <section id="painel" class="page active"><div class="dashboard-hero"><h2>🚐 Visão geral da operação</h2><p>Financeiro, frota e pendências importantes em um só lugar.</p></div>
 <h2>Painel Geral</h2><p class="note">Resumo consolidado de todos os municípios.</p>
 <div class="cards">
@@ -98,7 +98,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
 <div class="card"><small>📊 Resultado de caixa</small><div class="value" id="pResult">R$ 0,00</div></div>
 </div>
 <div class="card" style="margin-bottom:14px"><h3>⚠️ Alertas da Frota</h3><p class="note">Manutenções e documentos próximos do vencimento. Vermelho = vencido/urgente; amarelo = atenção.</p><div id="fleetAlerts"></div></div><div class="charts"><div class="card"><h3>Resultado geral</h3><div class="chartbox"><canvas id="generalChart"></canvas></div></div><div class="card"><h3>Resultado por município</h3><div id="citySummary"></div></div></div>
-<div class="card" style="margin-top:14px"><h3>Histórico completo do período</h3><p class="note">Quando um mês é selecionado, aparecem aqui os lançamentos daquele mês em todas as categorias.</p><div id="monthlyHistory"></div></div>
+<div class="card" style="margin-top:14px"><h3>Movimentação diária</h3><p class="note">Mostra somente o dia escolhido. Consulta rápida: hoje e os 14 dias anteriores. Dados antigos permanecem preservados.</p><div id="monthlyHistory"></div></div>
 </section>
 
 <section id="municipios" class="page">
@@ -474,7 +474,7 @@ for(const k of Object.keys(blank))if(!Array.isArray(db[k]))db[k]=[];
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 const money=v=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}), parseBRL=v=>{let s=String(v??'').trim().replace(/R\$\s?/g,'').replace(/\s/g,'');if(!s)return 0;if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');return Number(s)||0}, formatBRLInput=el=>{const n=parseBRL(el.value);el.value=n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});return n}, liveBRLInput=el=>{const digits=String(el.value||'').replace(/\D/g,'');if(!digits){el.value='';return 0}const n=Number(digits)/100;el.value=n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});return n}, serverDateTime=ts=>ts?new Date(ts).toLocaleString('pt-BR',{timeZone:'America/Fortaleza',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—', uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7), monthOf=d=>d?d.slice(0,7):'';
 const nowMonth=()=>new Date().toISOString().slice(0,7);
-function histMonth(){return $('historyMonth')?.value||''}
+function todayLocal(){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Fortaleza'}).format(new Date())}\nfunction histDate(){return $('historyDate')?.value||todayLocal()}\nfunction histMonth(){return histDate().slice(0,7)}
 function inHist(dateOrMonth){const h=histMonth();if(!h)return true;return (dateOrMonth||'').slice(0,7)===h}
 function recordMonth(x){return x.month||monthOf(x.date)||monthOf(x.createdAt)||''}
 
@@ -634,35 +634,21 @@ function renderMunicipios(){
 }
 
 function renderMonthlyHistory(){
- const hm=histMonth(), box=$('monthlyHistory');
- if(!box)return;
- if(!hm){box.innerHTML='<div class="empty">Escolha um mês acima para consultar o histórico completo.</div>';return}
- const routeMap=new Map(db.routes.map(r=>[r.id,r]));
- const vidsForMonth=new Set(db.links.filter(l=>{const r=routeMap.get(l.routeId);return r&&r.month===hm}).map(l=>l.vehicleId));
- const didsForMonth=new Set(db.links.filter(l=>{const r=routeMap.get(l.routeId);return r&&r.month===hm}).map(l=>l.driverId));
- const sections=[];
- const routes=db.routes.filter(r=>r.month===hm);
- sections.push('<h4>Contratos / Rotas</h4>'+tbl(['Município','Contrato','Rota','Receita','Status'],routes.map(r=>({type:'routes',id:r.id,cells:[esc(r.city),esc(r.contract),esc(r.route),money(r.income),esc(r.status)]}))));
- const fuels=db.fuel.filter(x=>monthOf(x.date)===hm);
- sections.push('<h4>Abastecimentos</h4>'+tbl(['Data','Veículo','Posto','Litros','Valor','KM'],fuels.map(x=>({type:'fuel',id:x.id,cells:[esc(x.date),esc(vehicleName(x.vehicleId)),esc(x.station),x.liters,money(x.total),x.km]}))));
- const atts=db.attendance.filter(x=>x.month===hm);
- sections.push('<h4>Dias trabalhados</h4>'+tbl(['Rota','Previstos','Trabalhados','Observação'],atts.map(x=>({type:'attendance',id:x.id,cells:[esc(routeName(x.routeId)),x.planned,x.worked,esc(x.obs)]}))));
- const maint=db.maintenance.filter(x=>monthOf(x.date)===hm);
- sections.push('<h4>Manutenções</h4>'+tbl(['Data','Veículo','Serviço','Valor'],maint.map(x=>({type:'maintenance',id:x.id,cells:[esc(x.date),esc(vehicleName(x.vehicleId)),esc(x.service),money(x.value)]}))));
- const exps=db.expenses.filter(x=>monthOf(x.date)===hm);
- sections.push('<h4>Despesas</h4>'+tbl(['Data','Tipo','Valor','Veículo','Rota'],exps.map(x=>({type:'expenses',id:x.id,cells:[esc(x.date),esc(x.typeName),money(x.value),esc(vehicleName(x.vehicleId)),esc(routeName(x.routeId))]}))));
- const recs=db.receivables.filter(x=>x.month===hm);
- sections.push('<h4>Faturamentos</h4>'+tbl(['Rota','Valor','Vencimento','Status'],recs.map(x=>({type:'receivables',id:x.id,cells:[esc(routeName(x.routeId)),money(x.value),esc(x.due),esc(x.status)]}))));
- const pays=db.driverPayments.filter(x=>x.month===hm);
- sections.push('<h4>Pagamentos de motoristas</h4>'+tbl(['Motorista','Valor','Pago em'],pays.map(x=>({type:'driverPayments',id:x.id,cells:[esc(driverName(x.driverId)),money(x.value),new Date(x.paidAt).toLocaleString('pt-BR')]}))));
- const msgs=db.messages.filter(x=>monthOf(x.createdAt)===hm);
- sections.push('<h4>Recados registrados</h4>'+tbl(['De','Para','Recado','Enviado','Leitura'],msgs.map(x=>({type:'messages',id:x.id,cells:[esc(x.from),esc(x.to),esc(x.text),new Date(x.createdAt).toLocaleString('pt-BR'),x.readAt?'Lido em '+new Date(x.readAt).toLocaleString('pt-BR'):'Ainda não lido']}))));
+ const hd=histDate(),box=$('monthlyHistory');if(!box)return;
+ const today=todayLocal(),d=new Date(today+'T12:00:00');d.setDate(d.getDate()-14);const minDate=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Fortaleza'}).format(d);
+ if(hd<minDate||hd>today){box.innerHTML='<div class="empty">A consulta rápida permite somente os últimos 15 dias.</div>';return}
+ const sections=[],fuels=db.fuel.filter(x=>x.date===hd);
+ sections.push('<h4>Abastecimentos</h4>'+tbl(['Tipo','Data','Veículo / Máquina','Posto','Litros','Valor','KM / Horímetro'],fuels.map(x=>({type:'fuel',id:x.id,cells:[x.fuelingType==='machine'?'Máquinas':'Escolar',esc(x.date),esc(x.fuelingType==='machine'?(x.assetName||'—'):vehicleName(x.vehicleId)),esc(x.station),x.liters,money(x.total),x.km]}))));
+ const maint=db.maintenance.filter(x=>x.date===hd);sections.push('<h4>Manutenções</h4>'+tbl(['Data','Veículo','Serviço','Valor'],maint.map(x=>({type:'maintenance',id:x.id,cells:[esc(x.date),esc(vehicleName(x.vehicleId)),esc(x.service),money(x.value)]}))));
+ const exps=db.expenses.filter(x=>x.date===hd);sections.push('<h4>Despesas</h4>'+tbl(['Data','Tipo','Valor','Veículo','Rota'],exps.map(x=>({type:'expenses',id:x.id,cells:[esc(x.date),esc(x.typeName),money(x.value),esc(vehicleName(x.vehicleId)),esc(routeName(x.routeId))]}))));
+ const parts=(db.parts||[]).filter(x=>x.date===hd);sections.push('<h4>Casa de Peças</h4>'+tbl(['Data','Veículo','Descrição','Valor'],parts.map(x=>({type:'parts',id:x.id,cells:[esc(x.date),esc(vehicleName(x.vehicleId)),esc(x.description),money(x.total)]}))));
+ const msgs=db.messages.filter(x=>(x.createdAt||'').slice(0,10)===hd);sections.push('<h4>Recados registrados</h4>'+tbl(['De','Para','Recado','Enviado','Leitura'],msgs.map(x=>({type:'messages',id:x.id,cells:[esc(x.from),esc(x.to),esc(x.text),new Date(x.createdAt).toLocaleString('pt-BR'),x.readAt?'Lido':'Ainda não lido']}))));
  box.innerHTML=sections.join('');
 }
 
 function render(){
  if(ONLINE_ROLE==='employee'){renderMunicipios();applyEmployeePermissions();return}
- const hm=histMonth();if($('historyLabel'))$('historyLabel').textContent=hm?`Exibindo histórico completo: ${hm.slice(5,7)}/${hm.slice(0,4)}`:'Todos os períodos';renderMonthlyHistory();
+ const hd=histDate();if($('historyLabel'))$('historyLabel').textContent=hd===todayLocal()?'Movimentação de hoje':'Consultando: '+hd.split('-').reverse().join('/');renderMonthlyHistory();
  const cities=allCities(),cityOpts='<option value="">Selecione</option>'+cities.map(c=>`<option>${esc(c)}</option>`).join('');
  $('rCity').innerHTML=cityOpts;
  const cur=$('finCity').value;$('finCity').innerHTML='<option value="">Todos</option>'+cities.map(c=>`<option ${c===cur?'selected':''}>${esc(c)}</option>`).join('');
