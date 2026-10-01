@@ -693,6 +693,7 @@ window.markMessageRead=async id=>{try{const at=new Date().toISOString();await ap
 window.replyMessage=id=>{
  const m=db.messages.find(x=>x.id===id);if(!m){alert('Recado não encontrado. Atualize e tente novamente.');return}
  $('msgReplyTo').value=id;
+ $('msgRecipient').required=false;
  $('msgRecipientWrap').style.display='none';
  $('replyPreview').style.display='block';
  $('replyPreview').innerHTML='<b>Respondendo a '+esc(m.from||'remetente')+':</b> '+esc(m.text||'');
@@ -701,7 +702,7 @@ window.replyMessage=id=>{
  $('msgText').placeholder='Digite sua resposta...';
  $('msgText').focus();
 };
-function clearReply(){$('msgReplyTo').value='';$('replyPreview').style.display='none';$('replyPreview').innerHTML='';$('cancelReply').style.display='none';$('msgRecipientWrap').style.display='block';$('msgRecipient').value='';$('msgText').placeholder='Digite o recado...'}
+function clearReply(){$('msgReplyTo').value='';$('replyPreview').style.display='none';$('replyPreview').innerHTML='';$('cancelReply').style.display='none';$('msgRecipientWrap').style.display='block';$('msgRecipient').required=true;$('msgRecipient').value='';$('msgText').placeholder='Digite o recado...'}
 window.deleteMessage=async id=>{if(!confirm('Excluir este recado?'))return;try{await api('messages?id=eq.'+id,{method:'DELETE'});db.messages=db.messages.filter(x=>x.id!==id);renderMessages()}catch(e){alert('Não foi possível excluir: '+e.message)}};
 $('messagesBtn').addEventListener('click',async()=>{messageDisplayLimit=10;$('messagesModal').classList.add('open');await loadMessageRecipients();renderMessages()});
 $('closeMessages').addEventListener('click',()=>$('messagesModal').classList.remove('open'));
