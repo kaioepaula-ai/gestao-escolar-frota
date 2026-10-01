@@ -170,7 +170,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
 </div></div>
 <div class="modal" id="messagesModal"><div class="modal-card">
 <div class="modal-head"><div><h2 style="margin:0">Recados da equipe</h2><p class="note" style="margin-top:4px">Espaço para as duas pessoas deixarem avisos uma para a outra.</p></div><button class="closebtn" id="closeMessages">×</button></div>
-<form id="messageForm"><input type="hidden" id="msgReplyTo"><div id="replyPreview" class="help-tip" style="display:none"></div><label>Para<select id="msgRecipient" required><option value="">Selecione o destinatário</option></select></label><label>Recado<textarea id="msgText" required placeholder="Digite o recado..."></textarea></label><div class="toolbar"><button class="primary">Enviar recado</button><button class="secondary" id="cancelReply" type="button" style="display:none">Cancelar resposta</button></div></form>
+<form id="messageForm"><input type="hidden" id="msgReplyTo"><div id="replyPreview" class="help-tip" style="display:none"></div><label id="msgRecipientWrap">Para<select id="msgRecipient" required><option value="">Selecione o destinatário</option></select></label><label>Recado<textarea id="msgText" required placeholder="Digite o recado..."></textarea></label><div class="toolbar"><button class="primary">Enviar recado</button><button class="secondary" id="cancelReply" type="button" style="display:none">Cancelar resposta</button></div></form>
 <div id="messagesList"></div></div></div>
 <script>
 'use strict';
@@ -687,8 +687,8 @@ function renderMessages(){
 }
 window.showOlderMessages=()=>{messageDisplayLimit+=10;renderMessages()};
 window.markMessageRead=async id=>{try{const at=new Date().toISOString();await api('messages?id=eq.'+id,{method:'PATCH',body:JSON.stringify({read_at:at})});const m=db.messages.find(x=>x.id===id);if(m)m.readAt=at;renderMessages()}catch(e){alert('Não foi possível marcar como lida: '+e.message)}};
-window.replyMessage=id=>{const m=db.messages.find(x=>x.id===id);if(!m)return;$('msgReplyTo').value=id;$('msgRecipient').value=m.senderId;$('replyPreview').style.display='block';$('replyPreview').innerHTML='<b>Respondendo a '+esc(m.from)+':</b> '+esc(m.text);$('cancelReply').style.display='inline-block';$('msgText').focus()};
-function clearReply(){$('msgReplyTo').value='';$('replyPreview').style.display='none';$('replyPreview').innerHTML='';$('cancelReply').style.display='none'}
+window.replyMessage=id=>{const m=db.messages.find(x=>x.id===id);if(!m)return;$('msgReplyTo').value=id;$('msgRecipient').value=m.senderId;$('msgRecipientWrap').style.display='none';$('replyPreview').style.display='block';$('replyPreview').innerHTML='<b>Respondendo a '+esc(m.from)+':</b> '+esc(m.text);$('cancelReply').style.display='inline-block';$('msgText').focus()};
+function clearReply(){$('msgReplyTo').value='';$('replyPreview').style.display='none';$('replyPreview').innerHTML='';$('cancelReply').style.display='none';$('msgRecipientWrap').style.display='block';$('msgRecipient').value=''}
 window.deleteMessage=async id=>{if(!confirm('Excluir este recado?'))return;try{await api('messages?id=eq.'+id,{method:'DELETE'});db.messages=db.messages.filter(x=>x.id!==id);renderMessages()}catch(e){alert('Não foi possível excluir: '+e.message)}};
 $('messagesBtn').addEventListener('click',async()=>{messageDisplayLimit=10;$('messagesModal').classList.add('open');await loadMessageRecipients();renderMessages()});
 $('closeMessages').addEventListener('click',()=>$('messagesModal').classList.remove('open'));
