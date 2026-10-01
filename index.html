@@ -349,34 +349,64 @@ async function loadEmployees(){
   const cities=Array.isArray(citiesOnline)?citiesOnline:[];
   const employees=(out.users||[]).filter(u=>u.profile?.role!=='admin');
   if(!employees.length){box.innerHTML='<div class="empty">Nenhum funcionário cadastrado.</div>';return;}
+  const mods=[['fuelings','Abastecimentos'],['parts_purchases','Casa de Peças'],['service_sales_prefeitura','Prefeitura'],['service_sales_diego','Diego'],['service_sales_outros','Outros Serviços'],['work_days','Dias trabalhados'],['km','KM'],['maintenance','Manutenção'],['documents','Documentos']];
   box.innerHTML=employees.map(u=>{
-   const mids=u.municipalities||[], ps=u.permissions||[];
-   const cityChecks=cities.map(c=>`<label style="display:inline-block;margin:4px 12px 4px 0"><input type="checkbox" class="ep-city" data-u="${u.id}" value="${c.id}" ${mids.includes(c.id)?'checked':''}> ${esc(c.name)}</label>`).join('');
-   const mods=[['fuelings','Abastecimentos'],['parts_purchases','Casa de Peças'],['service_sales_prefeitura','Prefeitura'],['service_sales_diego','Diego'],['service_sales_outros','Outros Serviços'],['work_days','Dias trabalhados'],['km','KM'],['maintenance','Manutenção'],['documents','Documentos']];
-   const modChecks=mods.map(([m,n])=>`<label style="display:inline-block;margin:4px 12px 4px 0"><input type="checkbox" class="ep-mod" data-u="${u.id}" value="${m}" ${ps.some(p=>p.module===m&&p.can_view)?'checked':''}> ${n}</label>`).join('');
-   return `<div class="card" style="margin:10px 0"><b>${esc(u.profile?.full_name||u.email||'Funcionário')}</b><div class="note">${esc(u.email||'')}</div><p><b>Municípios:</b><br>${cityChecks||'<span class="note">Não há municípios ativos no banco online.</span>'}</p><p><b>Módulos:</b><br>${modChecks}</p><button type="button" onclick="saveEmployeePermissions('${u.id}')">Salvar permissões</button></div>`;
+   const mids=u.municipalities||[], ps=u.permissions||[], active=u.profile?.active!==false;
+   const cityChecks=cities.map(city=>`<label style="display:inline-flex;align-items:center;gap:5px;margin:4px 12px 4px 0"><input type="checkbox" class="ep-city" data-u="${u.id}" value="${city.id}" ${mids.includes(city.id)?'checked':''}> ${esc(city.name)}</label>`).join('');
+   const rows=mods.map(([m,n])=>{const p=ps.find(x=>x.module===m)||{};return `<tr><td><b>${n}</b></td><td><input type="checkbox" class="ep-perm" data-u="${u.id}" data-m="${m}" data-p="view" ${p.can_view?'checked':''}></td><td><input type="checkbox" class="ep-perm" data-u="${u.id}" data-m="${m}" data-p="insert" ${p.can_insert?'checked':''}></td><td><input type="checkbox" class="ep-perm" data-u="${u.id}" data-m="${m}" data-p="update" ${p.can_update?'checked':''}></td></tr>`}).join('');
+   return `<div class="card employee-card" style="margin:10px 0">
+    <div class="section-title"><div><b id="emp-title-${u.id}">${esc(u.profile?.full_name||u.email||'Funcionário')}</b><div class="note">${esc(u.email||'')}</div></div><button class="secondary" type="button" onclick="toggleEmployeeEdit('${u.id}')">✏️ Editar</button></div>
+    <div id="emp-edit-${u.id}" style="display:none;margin:10px 0;padding:10px;background:#f8fafc;border-radius:8px">
+      <div class="row2"><label>Nome<input class="ep-name" data-u="${u.id}" value="${esc(u.profile?.full_name||'')}"></label><label>E-mail<input class="ep-email" data-u="${u.id}" type="email" value="${esc(u.email||'')}"></label></div>
+      <label style="display:flex;align-items:center;gap:7px"><input style="width:auto;margin:0" type="checkbox" class="ep-active" data-u="${u.id}" ${active?'checked':''}> Funcionário ativo</label>
+      <button class="primary" type="button" onclick="saveEmployeeEdit('${u.id}')">Salvar dados do funcionário</button>
+    </div>
+    <p><b>Municípios liberados:</b><br>${cityChecks||'<span class="note">Não há municípios ativos no banco online.</span>'}</p>
+    <p><b>Permissões por módulo:</b></p>
+    <table><thead><tr><th>Módulo</th><th>Visualizar</th><th>Adicionar</th><th>Editar</th></tr></thead><tbody>${rows}</tbody></table>
+    <label style="display:flex;align-items:center;gap:7px;margin-top:12px"><input style="width:auto;margin:0" type="checkbox" class="ep-admin" data-u="${u.id}" ${u.profile?.role==='admin'?'checked':''}> <b>Administrar o sistema</b></label>
+    <p class="note">Ative somente para quem poderá administrar usuários e configurações.</p>
+    <button class="primary" type="button" onclick="saveEmployeePermissions('${u.id}')">Salvar permissões</button>
+   </div>`;
   }).join('');
  }catch(e){box.innerHTML='<div class="empty">Erro: '+esc(e.message)+'</div>'}
 }
 async function createEmployee(){
  try{
   const full_name=document.getElementById('empName').value.trim(), email=document.getElementById('empEmail').value.trim(), password=document.getElementById('empPassword').value;
+  if(!full_name||!email)throw new Error('Informe nome e e-mail do funcionário.');
   await adminUsers({action:'create',full_name,email,password});
   document.getElementById('empName').value='';document.getElementById('empEmail').value='';document.getElementById('empPassword').value='';
-  alert('Funcionário criado. Agora defina os municípios e módulos permitidos.');
+  alert('Funcionário criado. Agora defina os municípios e permissões.');
   await loadEmployees();
  }catch(e){alert(e.message)}
+}
+function toggleEmployeeEdit(uid){const el=document.getElementById('emp-edit-'+uid);if(el)el.style.display=el.style.display==='none'?'block':'none'}
+async function saveEmployeeEdit(uid){
+ try{
+  const full_name=document.querySelector(`.ep-name[data-u="${uid}"]`)?.value.trim()||'';
+  const email=document.querySelector(`.ep-email[data-u="${uid}"]`)?.value.trim()||'';
+  const active=!!document.querySelector(`.ep-active[data-u="${uid}"]`)?.checked;
+  await adminUsers({action:'update',user_id:uid,full_name,email,active});
+  alert('Dados do funcionário atualizados.');
+  await loadEmployees();
+ }catch(e){alert('Não foi possível atualizar o funcionário: '+e.message)}
 }
 async function saveEmployeePermissions(uid){
  try{
   const municipality_ids=[...document.querySelectorAll(`.ep-city[data-u="${uid}"]:checked`)].map(x=>x.value);
-  const modules=[...document.querySelectorAll(`.ep-mod[data-u="${uid}"]:checked`)].map(x=>x.value);
-  await adminUsers({action:'permissions',user_id:uid,municipality_ids,modules});
+  const permission_details={};
+  document.querySelectorAll(`.ep-perm[data-u="${uid}"]`).forEach(x=>{permission_details[x.dataset.m]??={can_view:false,can_insert:false,can_update:false};permission_details[x.dataset.m]['can_'+x.dataset.p]=x.checked});
+  const modules=Object.entries(permission_details).filter(([,p])=>p.can_view||p.can_insert||p.can_update).map(([m])=>m);
+  const administer_system=!!document.querySelector(`.ep-admin[data-u="${uid}"]`)?.checked;
+  await adminUsers({action:'permissions',user_id:uid,municipality_ids,modules,permission_details,administer_system});
   alert('Permissões salvas.');
   await loadEmployees();
  }catch(e){alert(e.message)}
 }
 window.saveEmployeePermissions=saveEmployeePermissions;
+window.toggleEmployeeEdit=toggleEmployeeEdit;
+window.saveEmployeeEdit=saveEmployeeEdit;
 
 async function loadCoreOnline(){
  const status=document.getElementById('syncStatus');
