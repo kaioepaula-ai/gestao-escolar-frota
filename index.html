@@ -558,6 +558,17 @@ window.addCityRecord=async(type)=>{
    syncMsg('✓ Salvo online');await loadCoreOnline();return;
   }catch(e){syncMsg('Falha ao salvar',true);alert('Não foi possível salvar: '+e.message);return}
  }
+ if(type==='driver'&&ONLINE_ROLE==='employee'){
+  try{
+   syncMsg('☁ Salvando motorista...');
+   const cityRow=(await api('municipalities?select=id,name&name=eq.'+encodeURIComponent(city)))?.[0];
+   if(!cityRow)throw new Error('Município não autorizado.');
+   const name=g('cdName').trim();if(!name)throw new Error('Informe o nome do motorista.');
+   const payload={municipality_id:cityRow.id,name,cnh:g('cdCnh').trim(),monthly_value:parseBRL(g('cdValue')),bank:g('cdBank').trim(),agency:g('cdAgency').trim(),account:g('cdAccount').trim(),account_type:g('cdAccountType').trim(),pix:g('cdPix').trim(),operation:g('cdOperation').trim(),active:true};
+   await api('drivers',{method:'POST',body:JSON.stringify(payload)});
+   const keepCity=selectedCity,keepSub='motoristas';await loadCoreOnline();selectedCity=keepCity;activeSub=keepSub;renderMunicipios();syncMsg('✓ Motorista salvo online');alert('Motorista cadastrado e salvo com sucesso.');return
+  }catch(e){syncMsg('Falha ao salvar motorista',true);alert('Não foi possível salvar o motorista: '+e.message);return}
+ }
  if(type==='vehicle')db.vehicles.push({id:uid(),city,plate:g('cvPlate').trim().toUpperCase(),model:g('cvModel').trim(),km:+g('cvKm')||0,crlvExpiry:g('cvCrlv')});
  if(type==='driver')db.drivers.push({id:uid(),city,name:g('cdName').trim(),cnh:g('cdCnh').trim(),value:parseBRL(g('cdValue')),bank:g('cdBank').trim(),agency:g('cdAgency').trim(),account:g('cdAccount').trim(),accountType:g('cdAccountType').trim(),pix:g('cdPix').trim(),operation:g('cdOperation').trim()});
  if(type==='link')db.links.push({id:uid(),routeId:g('clRoute'),vehicleId:g('clVehicle'),driverId:g('clDriver'),start:g('clStart'),end:g('clEnd')});
