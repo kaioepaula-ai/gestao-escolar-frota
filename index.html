@@ -650,6 +650,10 @@ function renderMonthlyHistory(){
  const msgs=db.messages.filter(x=>(x.createdAt||'').slice(0,10)===hd);sections.push(historySection('Recados registrados',tbl(['De','Para','Recado','Enviado','Leitura'],msgs.map(x=>({type:'messages',id:x.id,cells:[esc(x.from),esc(x.to),esc(x.text),new Date(x.createdAt).toLocaleString('pt-BR'),x.readAt?'Lido':'Ainda não lido']}))),msgs.length));
  const pays=db.driverPayments.filter(x=>(x.competence||x.month||(x.paidAt||'').slice(0,10))===hd);sections.push(historySection('Histórico de Pagamentos',tbl(['Motorista','Valor','Data do pagamento'],pays.map(x=>({type:'driverPayments',id:x.id,cells:[esc(driverName(x.driverId)),money(x.value),esc((x.competence||x.month||(x.paidAt||'').slice(0,10)).split('-').reverse().join('/'))]}))),pays.length));
  box.innerHTML=sections.join('');
+ box.querySelectorAll('.history-section').forEach(section=>section.addEventListener('toggle',()=>{
+  if(!section.open)return;
+  box.querySelectorAll('.history-section[open]').forEach(other=>{if(other!==section)other.open=false});
+ }));
 }
 
 function render(){
