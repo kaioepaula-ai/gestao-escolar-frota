@@ -32,7 +32,7 @@ table{width:100%;border-collapse:collapse;background:#fff;margin-top:12px;font-s
 .city-tabs,.subtabs,.toolbar,.report-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.city-tab,.subtab{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:7px;cursor:pointer}.city-tab.active,.subtab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .subpage{display:none}.subpage.active{display:block}.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .filters{background:#fff;border:1px solid var(--line);padding:12px;border-radius:8px;margin-bottom:14px}.toolbar label{min-width:160px;margin:0}
-.checkpaid{display:flex;align-items:center;gap:6px}.checkpaid input{width:auto;margin:0}.paidrow{background:#f0fdf4}
+.checkpaid{display:flex;align-items:center;gap:6px}.checkpaid input{width:auto;margin:0}.paidrow{font-weight:600}.account-current>td{background:#e8f3ff!important}.account-savings>td{background:#eaf8ee!important}.account-pix>td{background:#fff4d9!important}.account-other>td{background:#f4efff!important}
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}.chartbox{height:250px;position:relative}.chartbox canvas{width:100%;height:100%}
 @media print{header,nav,form,.report-actions,.subtabs,.city-tabs,.note{display:none!important}.wrap{display:block}main{padding:0}.page{display:none!important}.page.active{display:block!important}}
 @media(max-width:900px){.wrap{grid-template-columns:1fr}nav{display:flex;overflow:auto;position:sticky;top:64px;z-index:15}nav button{min-width:150px}.cards{grid-template-columns:repeat(2,1fr)}.row,.row2,.grid,.charts{grid-template-columns:1fr}}
@@ -581,7 +581,8 @@ function renderMunicipios(){
  const vehicles=db.vehicles.filter(v=>vids.has(v.id));
  const accountRank=d=>{const t=(d.accountType||'').toLowerCase(),hasPix=!!(d.pix||'').trim();if(t.includes('corrente'))return 0;if(t.includes('poup'))return 1;if(t.includes('pix')||(!t&&hasPix))return 2;return 3};
  const accountClass=d=>{const r=accountRank(d);return r===0?'account-current':r===1?'account-savings':r===2?'account-pix':'account-other'};
- const drivers=db.drivers.filter(d=>dids.has(d.id)).sort((a,b)=>accountRank(a)-accountRank(b)||a.name.localeCompare(b.name,'pt-BR'));
+ const driverMap=new Map();db.drivers.filter(d=>dids.has(d.id)).forEach(d=>{const key=d.id||[(d.name||'').trim().toLowerCase(),(d.account||'').trim(),(d.pix||'').trim()].join('|');if(!driverMap.has(key))driverMap.set(key,d)});
+ const drivers=[...driverMap.values()].sort((a,b)=>accountRank(a)-accountRank(b)||a.name.localeCompare(b.name,'pt-BR'));
  const fuel=db.fuel.filter(x=>vids.has(x.vehicleId)&&(!hm||monthOf(x.date)===hm)),att=db.attendance.filter(x=>rids.has(x.routeId)&&(!hm||x.month===hm)),maint=db.maintenance.filter(x=>vids.has(x.vehicleId)&&(!hm||monthOf(x.date)===hm));
  const parts=(db.parts||[]).filter(x=>vids.has(x.vehicleId)&&(!hm||monthOf(x.date)===hm));
  const sales=(db.sales||[]).filter(x=>!hm||monthOf(x.date)===hm);
