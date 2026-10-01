@@ -707,7 +707,16 @@ $('messagesBtn').addEventListener('click',async()=>{messageDisplayLimit=10;$('me
 $('closeMessages').addEventListener('click',()=>$('messagesModal').classList.remove('open'));
 $('messagesModal').addEventListener('click',e=>{if(e.target===$('messagesModal'))$('messagesModal').classList.remove('open')});
 $('cancelReply').addEventListener('click',clearReply);
-$('messageForm').addEventListener('submit',async e=>{e.preventDefault();try{const body=$('msgText').value.trim(),reply_to_id=$('msgReplyTo').value||null,original=reply_to_id?db.messages.find(x=>x.id===reply_to_id):null,recipient_id=original?.senderId||$('msgRecipient').value;if(!recipient_id){alert('Selecione o destinatário.');return}if(!body){alert('Digite o recado.');return}await api('rpc/send_team_message',{method:'POST',body:JSON.stringify({p_body:body,p_recipient_id:reply_to_id?null:recipient_id,p_reply_to_id:reply_to_id})});e.target.reset();clearReply();await loadCoreOnline();await loadMessageRecipients();renderMessages()}catch(err){alert('Não foi possível enviar o recado: '+err.message)}});
+$('messageForm').addEventListener('submit',async e=>{e.preventDefault();try{
+ const body=$('msgText').value.trim(),reply_to_id=$('msgReplyTo').value||null;
+ if(!body){alert(reply_to_id?'Digite sua resposta.':'Digite o recado.');return}
+ let recipient_id=null;
+ if(!reply_to_id){recipient_id=$('msgRecipient').value;if(!recipient_id){alert('Selecione o destinatário.');return}}
+ const sent=await api('rpc/send_team_message',{method:'POST',body:JSON.stringify({p_body:body,p_recipient_id:recipient_id,p_reply_to_id:reply_to_id})});
+ if(!sent){throw new Error('O servidor não confirmou o envio.')}
+ e.target.reset();clearReply();await loadCoreOnline();await loadMessageRecipients();renderMessages();
+ alert(reply_to_id?'Resposta enviada com sucesso.':'Recado enviado com sucesso.')
+ }catch(err){alert('Não foi possível enviar: '+err.message)}});
 $('historyMonth').addEventListener('change',render);
 $('historyCurrent').addEventListener('click',()=>{$('historyMonth').value=nowMonth();render()});
 
