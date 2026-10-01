@@ -170,7 +170,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
 </div></div>
 <div class="modal" id="messagesModal"><div class="modal-card">
 <div class="modal-head"><div><h2 style="margin:0">Recados da equipe</h2><p class="note" style="margin-top:4px">Espaço para as duas pessoas deixarem avisos uma para a outra.</p></div><button class="closebtn" id="closeMessages">×</button></div>
-<form id="messageForm"><div class="row2"><label>De<input id="msgFrom" required placeholder="Nome"></label><label>Para<input id="msgTo" required placeholder="Nome"></label></div><label>Recado<textarea id="msgText" required placeholder="Digite o recado..."></textarea></label><button class="primary">Salvar recado</button></form>
+<form id="messageForm"><input type="hidden" id="msgReplyTo"><div id="replyPreview" class="help-tip" style="display:none"></div><label>Para<select id="msgRecipient" required><option value="">Selecione o destinatário</option></select></label><label>Recado<textarea id="msgText" required placeholder="Digite o recado..."></textarea></label><div class="toolbar"><button class="primary">Enviar recado</button><button class="secondary" id="cancelReply" type="button" style="display:none">Cancelar resposta</button></div></form>
 <div id="messagesList"></div></div></div>
 <script>
 'use strict';
@@ -420,12 +420,12 @@ async function loadCoreOnline(){
  const status=document.getElementById('syncStatus');
  try{
   status.textContent='☁ Baixando...';
-  const [cities,vehicles,drivers,routes,assignments,fuelings,workDays,maintenance,expenses,receivables,driverPayments,documents,messages,partsPurchases,serviceSales]=await Promise.all([
+  const [cities,vehicles,drivers,routes,assignments,fuelings,workDays,maintenance,expenses,receivables,driverPayments,documents,messages,profiles,partsPurchases,serviceSales]=await Promise.all([
    api('municipalities?select=*&order=name'),api('vehicles?select=*&order=created_at'),api('drivers?select=*&order=created_at'),
    api('routes?select=*&order=created_at'),api('assignments?select=*&order=created_at'),api('fuelings?select=*&order=fueled_at.desc'),
    api('work_days?select=*&order=work_date.desc'),api('maintenance?select=*&order=service_date.desc'),api('expenses?select=*&order=expense_date.desc'),
    api('receivables?select=*&order=competence.desc'),api('driver_payments?select=*&order=competence.desc'),api('documents?select=*&order=created_at.desc'),
-   api('messages?select=*&order=sent_at.desc'),api('parts_purchases?select=*&order=purchased_at.desc'),api('service_sales?select=*&order=recorded_at.desc')
+   api('messages?select=*&order=sent_at.desc'),api('profiles?select=id,full_name'),api('parts_purchases?select=*&order=purchased_at.desc'),api('service_sales?select=*&order=recorded_at.desc')
   ]);
   const cityById=Object.fromEntries((cities||[]).map(c=>[c.id,c.name]));
   const local=structuredClone(blank);
@@ -443,7 +443,8 @@ async function loadCoreOnline(){
   local.receivables=(receivables||[]).map(x=>({id:x.id,routeId:x.route_id||'',month:(x.competence||'').slice(0,7),invoice:x.invoice_number||'',gross:Number(x.gross_amount||x.amount||0),percent:Number(x.retention_percent||0),retained:Number(x.retained_amount||0),net:Number(x.net_amount||x.amount||0),value:Number(x.net_amount||x.amount||0),due:x.due_date||'',receivedAt:x.received_at||'',status:x.status==='received'?'Pago':(x.status==='cancelled'?'Cancelado':'Pendente')}));
   local.driverPayments=(driverPayments||[]).map(x=>({id:x.id,driverId:x.driver_id,month:(x.competence||'').slice(0,7),value:Number(x.amount||0),paidAt:x.paid_at||''}));
   local.documents=(documents||[]).map(x=>({id:x.id,ownerType:x.owner_type==='driver'?'Motorista':'Veículo',ownerId:x.owner_id||'',name:x.title||x.document_type||'',expiry:x.expiry_date||'',obs:x.notes||'',fileUrl:x.file_url||''}));
-  local.messages=(messages||[]).map(x=>({id:x.id,text:x.body||'',createdAt:x.sent_at||'',read:x.read_at?true:false}));
+  const profileNames=Object.fromEntries((profiles||[]).map(p=>[p.id,p.full_name||'Usuário']));
+  local.messages=(messages||[]).map(x=>({id:x.id,senderId:x.sender_id,recipientId:x.recipient_id,from:profileNames[x.sender_id]||'Usuário',to:profileNames[x.recipient_id]||'Usuário',text:x.body||'',createdAt:x.sent_at||'',readAt:x.read_at||null,replyToId:x.reply_to_id||null}));
   db=local;
   if(ONLINE_ROLE!=='employee') save(local);
   status.textContent='☁ Online atualizado';
@@ -674,17 +675,23 @@ function render(){
 $('finMonth').addEventListener('change',render);$('finCity').addEventListener('change',render);$('clearFin').addEventListener('click',()=>{$('finMonth').value='';$('finCity').value='';render()});$('printBtn').addEventListener('click',()=>window.print());
 $('exportCSV').addEventListener('click',()=>{const rows=[['Município','Recebido','Combustível','Motoristas pagos','Manutenção + extras','Resultado'],...allCities().map(c=>{const m=metrics(c,$('finMonth').value);return[c,m.income,m.fuel,m.drivers,m.other,m.result]})];const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='financeiro_geral_frota.csv';a.click();URL.revokeObjectURL(a.href)});
 
-function renderMessages(){
- const list=[...db.messages].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
- $('msgCount').textContent=list.length;
- $('messagesList').innerHTML=list.length?list.map(m=>`<div class="message ${m.readAt?'':'unread'}"><b>${esc(m.from)}</b> → <b>${esc(m.to)}</b><br><small>Enviado: ${new Date(m.createdAt).toLocaleString('pt-BR')}</small><p>${esc(m.text)}</p><div class="read-status ${m.readAt?'read':'unread'}">${m.readAt?'✓✓ Lido em '+new Date(m.readAt).toLocaleString('pt-BR'):'○ Ainda não lido'}</div><div class="msg-actions">${m.readAt?'':`<button class="primary" type="button" onclick="markMessageRead('${m.id}')">✓ Marcar como lido</button>`}<button class="secondary" type="button" onclick="deleteMessage('${m.id}')">Excluir</button></div></div>`).join(''):'<div class="empty">Nenhum recado ainda.</div>';
+async function loadMessageRecipients(){
+ try{const rows=await api('profiles?select=id,full_name&active=eq.true');const me=currentSession()?.user?.id||'';$('msgRecipient').innerHTML='<option value="">Selecione o destinatário</option>'+rows.filter(x=>x.id!==me).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.full_name||'Usuário')+'</option>').join('')}catch(e){}
 }
-window.markMessageRead=id=>{const m=db.messages.find(x=>x.id===id);if(m&&!m.readAt){m.readAt=new Date().toISOString();save();renderMessages();render()}};
-window.deleteMessage=id=>{db.messages=db.messages.filter(x=>x.id!==id);save();renderMessages();render()}
-$('messagesBtn').addEventListener('click',()=>{$('messagesModal').classList.add('open');renderMessages()});
+function renderMessages(){
+ const me=currentSession()?.user?.id||'',list=[...db.messages].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+ const unread=list.filter(m=>m.recipientId===me&&!m.readAt).length;$('msgCount').textContent=unread;
+ $('messagesList').innerHTML=list.length?list.map(m=>{const original=m.replyToId?db.messages.find(x=>x.id===m.replyToId):null;return '<div class="message '+(!m.readAt&&m.recipientId===me?'unread':'')+'"><b>'+esc(m.from)+'</b> → <b>'+esc(m.to)+'</b><br><small>Enviado: '+new Date(m.createdAt).toLocaleString('pt-BR')+'</small>'+(original?'<div class="help-tip"><b>Em resposta a '+esc(original.from)+':</b> '+esc(original.text)+'</div>':'')+'<p>'+esc(m.text)+'</p><div class="read-status '+(m.readAt?'read':'unread')+'">'+(m.readAt?'✓✓ Lida em '+new Date(m.readAt).toLocaleString('pt-BR'):'○ Não lida')+'</div><div class="msg-actions">'+(m.recipientId===me&&!m.readAt?'<button class="primary" type="button" onclick="markMessageRead(\''+m.id+'\')">✓ Marcar como lida</button>':'')+'<button class="secondary" type="button" onclick="replyMessage(\''+m.id+'\')">↩ Responder</button><button class="secondary" type="button" onclick="deleteMessage(\''+m.id+'\')">Excluir</button></div></div>'}).join(''):'<div class="empty">Nenhum recado ainda.</div>';
+}
+window.markMessageRead=async id=>{try{const at=new Date().toISOString();await api('messages?id=eq.'+id,{method:'PATCH',body:JSON.stringify({read_at:at})});const m=db.messages.find(x=>x.id===id);if(m)m.readAt=at;renderMessages()}catch(e){alert('Não foi possível marcar como lida: '+e.message)}};
+window.replyMessage=id=>{const m=db.messages.find(x=>x.id===id);if(!m)return;$('msgReplyTo').value=id;$('msgRecipient').value=m.senderId;$('replyPreview').style.display='block';$('replyPreview').innerHTML='<b>Respondendo a '+esc(m.from)+':</b> '+esc(m.text);$('cancelReply').style.display='inline-block';$('msgText').focus()};
+function clearReply(){$('msgReplyTo').value='';$('replyPreview').style.display='none';$('replyPreview').innerHTML='';$('cancelReply').style.display='none'}
+window.deleteMessage=async id=>{if(!confirm('Excluir este recado?'))return;try{await api('messages?id=eq.'+id,{method:'DELETE'});db.messages=db.messages.filter(x=>x.id!==id);renderMessages()}catch(e){alert('Não foi possível excluir: '+e.message)}};
+$('messagesBtn').addEventListener('click',async()=>{$('messagesModal').classList.add('open');await loadMessageRecipients();renderMessages()});
 $('closeMessages').addEventListener('click',()=>$('messagesModal').classList.remove('open'));
 $('messagesModal').addEventListener('click',e=>{if(e.target===$('messagesModal'))$('messagesModal').classList.remove('open')});
-$('messageForm').addEventListener('submit',e=>{e.preventDefault();db.messages.push({id:uid(),from:$('msgFrom').value.trim(),to:$('msgTo').value.trim(),text:$('msgText').value.trim(),createdAt:new Date().toISOString(),readAt:null});e.target.reset();save();renderMessages();render()});
+$('cancelReply').addEventListener('click',clearReply);
+$('messageForm').addEventListener('submit',async e=>{e.preventDefault();try{const recipient_id=$('msgRecipient').value,body=$('msgText').value.trim(),reply_to_id=$('msgReplyTo').value||null;if(!recipient_id||!body)return;await api('messages',{method:'POST',body:JSON.stringify({sender_id:currentSession().user.id,recipient_id,body,reply_to_id})});e.target.reset();clearReply();await loadCoreOnline();await loadMessageRecipients();renderMessages()}catch(err){alert('Não foi possível enviar o recado: '+err.message)}});
 $('historyMonth').addEventListener('change',render);
 $('historyCurrent').addEventListener('click',()=>{$('historyMonth').value=nowMonth();render()});
 
