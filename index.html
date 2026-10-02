@@ -145,7 +145,8 @@ body.employee-mode #syncBtn{display:inline-block!important}
 <div class="report-actions"><button class="secondary print-green" type="button" onclick="printArea('officeEmployeesTable','Funcionários do Escritório')">🖨️ PDF / Imprimir</button></div>
 <div id="officeEmployeesTable"><div class="empty">Carregando funcionários...</div></div>
 </section>
-\n<section id="financeiro" class="page">
+
+<section id="financeiro" class="page">
 <h2>Financeiro Geral</h2><p class="note">Visão de caixa: somente valores efetivamente recebidos entram como receita.</p>
 <div class="report-actions"><button class="secondary" id="exportCSV">Exportar Excel (CSV)</button><button class="secondary" id="printBtn">Gerar PDF / Imprimir</button></div>
 <div class="filters"><div class="toolbar"><label>Competência<input id="finMonth" type="month"></label><label>Município<select id="finCity"><option value="">Todos</option></select></label><button class="secondary" id="clearFin" type="button">Limpar filtros</button></div></div>
@@ -841,7 +842,8 @@ window.deleteOfficeEmployee=async id=>{if(!confirm('Excluir este funcionário do
 $('officeEmployeeForm').addEventListener('submit',async e=>{e.preventDefault();const id=$('oeId').value;const body={name:$('oeName').value.trim(),cpf:$('oeCpf').value.trim()||null,role:$('oeRole').value.trim()||null,phone:$('oePhone').value.trim()||null,admission_date:$('oeAdmission').value||null,salary:parseBRL($('oeSalary').value),bank:$('oeBank').value.trim()||null,account_type:$('oeAccountType').value.trim()||null,agency:$('oeAgency').value.trim()||null,account:$('oeAccount').value.trim()||null,pix:$('oePix').value.trim()||null,active:$('oeActive').value==='true',notes:$('oeNotes').value.trim()||null};try{if(id)await api('office_employees?id=eq.'+id,{method:'PATCH',body:JSON.stringify(body)});else await api('office_employees',{method:'POST',body:JSON.stringify(body)});resetOfficeEmployeeForm();await loadOfficeEmployees();alert(id?'Funcionário atualizado com sucesso.':'Funcionário cadastrado com sucesso.')}catch(err){alert('Não foi possível salvar: '+err.message)}});
 $('oeCancelBtn').addEventListener('click',resetOfficeEmployeeForm);
 $('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-page]');if(b?.dataset.page==='escritorio')loadOfficeEmployees()});
-\nconst HELP=[
+
+const HELP=[
 ['PAINEL — O que é?','É a visão geral da empresa. Consolida os números de todos os municípios e mostra entradas, despesas, resultado e valores a receber.'],
 ['Entradas gerais','Soma das receitas cadastradas nos contratos/rotas dentro do período selecionado.'],
 ['Despesas gerais','Soma dos custos considerados pelo sistema no período: combustível, motoristas, manutenções e despesas extras.'],
