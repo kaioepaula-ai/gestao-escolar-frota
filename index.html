@@ -366,7 +366,7 @@ async function loadEmployees(){
    api('municipalities?select=id,name,active&active=eq.true&order=name')
   ]);
   const cities=Array.isArray(citiesOnline)?citiesOnline:[];
-  const employees=(out.users||[]).filter(u=>u.profile?.role!=='admin');
+  const employees=(out.users||[]).filter(u=>String(u.email||'').toLowerCase()!=='yellowrentacar@hotmail.com');
   if(!employees.length){box.innerHTML='<div class="empty">Nenhum funcionário cadastrado.</div>';return;}
   const mods=[['summary','Resumo'],['vehicles','Veículos'],['drivers','Motoristas'],['assignments','Vínculos'],['fuelings','Abastecimento Escolar'],['machine_fuelings','Abastecimento Máquinas'],['parts_purchases','Casa de Peças'],['service_sales_prefeitura','Prefeitura'],['service_sales_diego','Diego'],['service_sales_outros','Outros Serviços'],['work_days','Dias trabalhados'],['km','KM'],['maintenance','Manutenção'],['documents','Documentos'],['expenses','Despesas Extras'],['routes','Contratos / Rotas'],['receivables','Faturamentos'],['finance','Financeiro'],['messages','Recados']];
   box.innerHTML=employees.map(u=>{
@@ -386,8 +386,8 @@ async function loadEmployees(){
       <p><b>Municípios liberados:</b><br>${cityChecks||'<span class="note">Não há municípios ativos no banco online.</span>'}</p>
       <p><b>Permissões por módulo:</b></p>
       <div style="overflow:auto"><table><thead><tr><th>Módulo</th><th>Visualizar</th><th>Adicionar</th><th>Editar</th></tr></thead><tbody>${rows}</tbody></table></div>
-      <label style="display:flex;align-items:center;gap:7px;margin-top:12px"><input style="width:auto;margin:0" type="checkbox" class="ep-admin" data-u="${u.id}" ${u.profile?.role==='admin'?'checked':''}> <b>Administrar o sistema</b></label>
-      <p class="note">Ative somente para quem poderá administrar usuários e configurações.</p>
+      <label style="display:flex;align-items:center;gap:7px;margin-top:12px"><input style="width:auto;margin:0" type="checkbox" class="ep-admin" data-u="${u.id}" onchange="toggleEmployeeAdminAll('${u.id}',this.checked)" ${u.profile?.role==='admin'?'checked':''}> <b>Administrador — acesso completo aos módulos</b></label>
+      <p class="note">Ao marcar Administrador, todos os municípios e todas as permissões deste perfil são selecionados automaticamente. Os controles de usuários e segurança continuam exclusivos do administrador principal.</p>
       <button class="primary" type="button" onclick="saveEmployeePermissions('${u.id}')">Salvar permissões</button>
     </div>
    </details>`;
@@ -451,13 +451,18 @@ async function changeMyPassword(){
 }
 window.resetEmployeePassword=resetEmployeePassword;
 window.setEmployeeBlocked=setEmployeeBlocked;
+function toggleEmployeeAdminAll(uid,checked){
+ document.querySelectorAll(`.ep-city[data-u="${uid}"],.ep-perm[data-u="${uid}"]`).forEach(x=>x.checked=checked);
+}
+window.toggleEmployeeAdminAll=toggleEmployeeAdminAll;
 async function saveEmployeePermissions(uid){
  try{
+  const administer_system=!!document.querySelector(`.ep-admin[data-u="${uid}"]`)?.checked;
+  if(administer_system)toggleEmployeeAdminAll(uid,true);
   const municipality_ids=[...document.querySelectorAll(`.ep-city[data-u="${uid}"]:checked`)].map(x=>x.value);
   const permission_details={};
   document.querySelectorAll(`.ep-perm[data-u="${uid}"]`).forEach(x=>{permission_details[x.dataset.m]??={can_view:false,can_insert:false,can_update:false};permission_details[x.dataset.m]['can_'+x.dataset.p]=x.checked});
   const modules=Object.entries(permission_details).filter(([,p])=>p.can_view||p.can_insert||p.can_update).map(([m])=>m);
-  const administer_system=!!document.querySelector(`.ep-admin[data-u="${uid}"]`)?.checked;
   await adminUsers({action:'permissions',user_id:uid,municipality_ids,modules,permission_details,administer_system});
   alert('Permissões salvas.');
   await loadEmployees();
