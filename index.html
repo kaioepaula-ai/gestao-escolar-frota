@@ -376,11 +376,11 @@ async function loadEmployees(){
    return `<details class="card employee-card employee-permission-profile" data-uid="${u.id}" style="margin:10px 0">
     <summary class="employee-profile-summary"><span><b id="emp-title-${u.id}">${esc(u.profile?.full_name||u.email||'Funcionário')}</b><span class="note employee-profile-email">${esc(u.email||'')}</span></span><span class="employee-profile-arrow">▶</span></summary>
     <div class="employee-profile-body">
-      <div class="toolbar"><button class="secondary" type="button" onclick="toggleEmployeeEdit('${u.id}')">✏️ Editar perfil</button></div>
+      <div class="toolbar"><button class="secondary" type="button" onclick="toggleEmployeeEdit('${u.id}')">✏️ Editar perfil</button><button style="background:#dc2626;color:#fff;border-color:#b91c1c" type="button" onclick="setEmployeeBlocked('${u.id}',${active?'true':'false'})">${active?'⛔ Bloquear funcionário':'✅ Reativar funcionário'}</button></div>
       <div id="emp-edit-${u.id}" style="display:none;margin:10px 0;padding:10px;background:#f8fafc;border-radius:8px">
         <div class="row2"><label>Nome<input class="ep-name" data-u="${u.id}" value="${esc(u.profile?.full_name||'')}"></label><label>E-mail<input class="ep-email" data-u="${u.id}" type="email" value="${esc(u.email||'')}"></label></div>
         <label style="display:flex;align-items:center;gap:7px"><input style="width:auto;margin:0" type="checkbox" class="ep-active" data-u="${u.id}" ${active?'checked':''}> Funcionário ativo</label>
-        <div class="toolbar"><button class="primary" type="button" onclick="saveEmployeeEdit('${u.id}')">Salvar dados do funcionário</button><button class="${active?'danger':'primary'}" type="button" onclick="setEmployeeBlocked('${u.id}',${active?'true':'false'})">${active?'⛔ Bloquear acesso':'✅ Reativar acesso'}</button></div>
+        <div class="toolbar"><button class="primary" type="button" onclick="saveEmployeeEdit('${u.id}')">Salvar dados do funcionário</button></div>
         <div style="margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb"><label>Definir nova senha provisória<input class="ep-reset-password" data-u="${u.id}" type="password" minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></label><button class="secondary" type="button" onclick="resetEmployeePassword('${u.id}')">🔑 Definir nova senha</button><p class="note">Por segurança, a senha atual não pode ser visualizada. Aqui você pode substituí-la por uma nova.</p></div>
       </div>
       <p><b>Municípios liberados:</b><br>${cityChecks||'<span class="note">Não há municípios ativos no banco online.</span>'}</p>
