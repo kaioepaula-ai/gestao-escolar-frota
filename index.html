@@ -84,7 +84,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
 <button data-page="municipios">Municípios</button>
 <button data-page="contratos">Contratos</button>
 <button data-page="receber">Faturamentos</button>
-<button data-page="financeiro">Financeiro</button>
+<button data-page="escritorio">Funcionários / Escritório</button>\n<button data-page="financeiro">Financeiro</button>
 </nav>
 <main>
 
@@ -127,7 +127,24 @@ body.employee-mode #syncBtn{display:inline-block!important}
 <div class="report-actions"><button class="secondary" type="button" onclick="printArea('receivablesTable','Faturamentos')">🖨️ PDF / Imprimir</button></div><div id="receivablesTable"></div>
 </section>
 
-<section id="financeiro" class="page">
+
+<section id="escritorio" class="page">
+<div class="section-title"><div><h2>👥 Funcionários / Escritório</h2><p class="note">Cadastro da equipe administrativa, independente dos municípios.</p></div></div>
+<form id="officeEmployeeForm" class="card">
+<input id="oeId" type="hidden">
+<div class="row"><label>Nome completo<input id="oeName" required></label><label>CPF<input id="oeCpf" placeholder="000.000.000-00"></label><label>Função / Cargo<input id="oeRole" placeholder="Ex.: Administrativo, Financeiro"></label></div>
+<div class="row"><label>Telefone<input id="oePhone" placeholder="(85) 99999-9999"></label><label>Data de admissão<input id="oeAdmission" type="date"></label><label>Salário<input id="oeSalary" type="text" inputmode="decimal" placeholder="R$ 0,00" onblur="formatBRLInput(this)"></label></div>
+<div class="row"><label>Banco<input id="oeBank" list="officeBankList" autocomplete="off"></label><label>Tipo de conta<input id="oeAccountType" list="officeAccountTypeList" autocomplete="off"></label><label>Agência<input id="oeAgency"></label></div>
+<div class="row"><label>Conta<input id="oeAccount"></label><label>PIX<input id="oePix"></label><label>Status<select id="oeActive"><option value="true">Ativo</option><option value="false">Inativo</option></select></label></div>
+<label>Observações<textarea id="oeNotes" placeholder="Informações adicionais do funcionário"></textarea></label>
+<datalist id="officeBankList"><option value="Banco do Brasil"><option value="Bradesco"><option value="Caixa Econômica Federal"><option value="Itaú"><option value="Santander"><option value="Nubank"><option value="Inter"><option value="Sicredi"><option value="Sicoob"></datalist>
+<datalist id="officeAccountTypeList"><option value="Conta Corrente"><option value="Conta Poupança"><option value="Conta Salário"><option value="Conta de Pagamento"></datalist>
+<div class="toolbar"><button class="primary" type="submit" id="oeSaveBtn">Cadastrar funcionário</button><button class="secondary" type="button" id="oeCancelBtn" style="display:none">Cancelar edição</button></div>
+</form>
+<div class="report-actions"><button class="secondary print-green" type="button" onclick="printArea('officeEmployeesTable','Funcionários do Escritório')">🖨️ PDF / Imprimir</button></div>
+<div id="officeEmployeesTable"><div class="empty">Carregando funcionários...</div></div>
+</section>
+\n<section id="financeiro" class="page">
 <h2>Financeiro Geral</h2><p class="note">Visão de caixa: somente valores efetivamente recebidos entram como receita.</p>
 <div class="report-actions"><button class="secondary" id="exportCSV">Exportar Excel (CSV)</button><button class="secondary" id="printBtn">Gerar PDF / Imprimir</button></div>
 <div class="filters"><div class="toolbar"><label>Competência<input id="finMonth" type="month"></label><label>Município<select id="finCity"><option value="">Todos</option></select></label><button class="secondary" id="clearFin" type="button">Limpar filtros</button></div></div>
@@ -813,7 +830,17 @@ $('historyMonth').addEventListener('change',render);
 $('historyCurrent').addEventListener('click',()=>{$('historyMonth').value=nowMonth();render()});
 
 
-const HELP=[
+
+let officeEmployees=[];
+function resetOfficeEmployeeForm(){const f=$('officeEmployeeForm');if(f)f.reset();$('oeId').value='';$('oeActive').value='true';$('oeSaveBtn').textContent='Cadastrar funcionário';$('oeCancelBtn').style.display='none'}
+async function loadOfficeEmployees(){try{officeEmployees=await api('office_employees?select=*&order=name.asc')||[];renderOfficeEmployees()}catch(e){$('officeEmployeesTable').innerHTML='<div class="empty">Não foi possível carregar os funcionários: '+esc(e.message)+'</div>'}}
+function renderOfficeEmployees(){const box=$('officeEmployeesTable');if(!box)return;if(!officeEmployees.length){box.innerHTML='<div class="empty">Nenhum funcionário do escritório cadastrado.</div>';return}box.innerHTML='<table><thead><tr><th>Nome</th><th>Cargo</th><th>Telefone</th><th>Admissão</th><th>Salário</th><th>Banco / Conta</th><th>PIX</th><th>Status</th><th>Ações</th></tr></thead><tbody>'+officeEmployees.map(x=>'<tr><td>'+esc(x.name||'')+'</td><td>'+esc(x.role||'')+'</td><td>'+esc(x.phone||'')+'</td><td>'+esc(x.admission_date?x.admission_date.split('-').reverse().join('/'):'')+'</td><td>'+money(+x.salary||0)+'</td><td>'+esc([x.bank,x.account_type,x.agency,x.account].filter(Boolean).join(' • '))+'</td><td>'+esc(x.pix||'')+'</td><td><span class="badge '+(x.active?'good':'warning')+'">'+(x.active?'Ativo':'Inativo')+'</span></td><td class="actions"><button type="button" onclick="editOfficeEmployee(\''+x.id+'\')">✏️ Editar</button><button type="button" onclick="deleteOfficeEmployee(\''+x.id+'\')">🗑️ Excluir</button></td></tr>').join('')+'</tbody></table>'}
+window.editOfficeEmployee=id=>{const x=officeEmployees.find(v=>v.id===id);if(!x)return;$('oeId').value=x.id;$('oeName').value=x.name||'';$('oeCpf').value=x.cpf||'';$('oeRole').value=x.role||'';$('oePhone').value=x.phone||'';$('oeAdmission').value=x.admission_date||'';$('oeSalary').value=money(+x.salary||0);$('oeBank').value=x.bank||'';$('oeAccountType').value=x.account_type||'';$('oeAgency').value=x.agency||'';$('oeAccount').value=x.account||'';$('oePix').value=x.pix||'';$('oeActive').value=String(x.active!==false);$('oeNotes').value=x.notes||'';$('oeSaveBtn').textContent='Salvar alterações';$('oeCancelBtn').style.display='inline-block';window.scrollTo({top:0,behavior:'smooth'})};
+window.deleteOfficeEmployee=async id=>{if(!confirm('Excluir este funcionário do escritório?'))return;try{await api('office_employees?id=eq.'+id,{method:'DELETE'});await loadOfficeEmployees()}catch(e){alert('Não foi possível excluir: '+e.message)}};
+$('officeEmployeeForm').addEventListener('submit',async e=>{e.preventDefault();const id=$('oeId').value;const body={name:$('oeName').value.trim(),cpf:$('oeCpf').value.trim()||null,role:$('oeRole').value.trim()||null,phone:$('oePhone').value.trim()||null,admission_date:$('oeAdmission').value||null,salary:parseBRL($('oeSalary').value),bank:$('oeBank').value.trim()||null,account_type:$('oeAccountType').value.trim()||null,agency:$('oeAgency').value.trim()||null,account:$('oeAccount').value.trim()||null,pix:$('oePix').value.trim()||null,active:$('oeActive').value==='true',notes:$('oeNotes').value.trim()||null};try{if(id)await api('office_employees?id=eq.'+id,{method:'PATCH',body:JSON.stringify(body)});else await api('office_employees',{method:'POST',body:JSON.stringify(body)});resetOfficeEmployeeForm();await loadOfficeEmployees();alert(id?'Funcionário atualizado com sucesso.':'Funcionário cadastrado com sucesso.')}catch(err){alert('Não foi possível salvar: '+err.message)}});
+$('oeCancelBtn').addEventListener('click',resetOfficeEmployeeForm);
+$('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-page]');if(b?.dataset.page==='escritorio')loadOfficeEmployees()});
+\nconst HELP=[
 ['PAINEL — O que é?','É a visão geral da empresa. Consolida os números de todos os municípios e mostra entradas, despesas, resultado e valores a receber.'],
 ['Entradas gerais','Soma das receitas cadastradas nos contratos/rotas dentro do período selecionado.'],
 ['Despesas gerais','Soma dos custos considerados pelo sistema no período: combustível, motoristas, manutenções e despesas extras.'],
