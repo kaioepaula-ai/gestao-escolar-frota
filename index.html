@@ -160,6 +160,12 @@ body.employee-mode #syncBtn{display:inline-block!important}
 </div>
 </div>
 <div class="card" style="margin-top:12px">
+  <h3 style="margin-top:0">Minha senha</h3>
+  <p class="note">Altere aqui a sua própria senha de acesso.</p>
+  <div class="row2"><label>Nova senha<input id="myNewPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></label><label>Confirmar nova senha<input id="myConfirmPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Digite novamente"></label></div>
+  <button class="primary" id="changeMyPasswordBtn" type="button">🔐 Alterar minha senha</button>
+</div>
+<div class="card" style="margin-top:12px">
   <h3 style="margin-top:0">Sessão</h3>
   <p class="note">Use “Sair da conta” ao terminar de usar um computador compartilhado.</p>
   <button class="secondary" id="settingsLogout" type="button">🚪 Sair da conta</button>
@@ -374,7 +380,8 @@ async function loadEmployees(){
       <div id="emp-edit-${u.id}" style="display:none;margin:10px 0;padding:10px;background:#f8fafc;border-radius:8px">
         <div class="row2"><label>Nome<input class="ep-name" data-u="${u.id}" value="${esc(u.profile?.full_name||'')}"></label><label>E-mail<input class="ep-email" data-u="${u.id}" type="email" value="${esc(u.email||'')}"></label></div>
         <label style="display:flex;align-items:center;gap:7px"><input style="width:auto;margin:0" type="checkbox" class="ep-active" data-u="${u.id}" ${active?'checked':''}> Funcionário ativo</label>
-        <button class="primary" type="button" onclick="saveEmployeeEdit('${u.id}')">Salvar dados do funcionário</button>
+        <div class="toolbar"><button class="primary" type="button" onclick="saveEmployeeEdit('${u.id}')">Salvar dados do funcionário</button><button class="${active?'danger':'primary'}" type="button" onclick="setEmployeeBlocked('${u.id}',${active?'true':'false'})">${active?'⛔ Bloquear acesso':'✅ Reativar acesso'}</button></div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb"><label>Definir nova senha provisória<input class="ep-reset-password" data-u="${u.id}" type="password" minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></label><button class="secondary" type="button" onclick="resetEmployeePassword('${u.id}')">🔑 Definir nova senha</button><p class="note">Por segurança, a senha atual não pode ser visualizada. Aqui você pode substituí-la por uma nova.</p></div>
       </div>
       <p><b>Municípios liberados:</b><br>${cityChecks||'<span class="note">Não há municípios ativos no banco online.</span>'}</p>
       <p><b>Permissões por módulo:</b></p>
@@ -409,6 +416,41 @@ async function saveEmployeeEdit(uid){
   await loadEmployees();
  }catch(e){alert('Não foi possível atualizar o funcionário: '+e.message)}
 }
+async function resetEmployeePassword(uid){
+ try{
+  const input=document.querySelector(`.ep-reset-password[data-u="${uid}"]`), password=input?.value||'';
+  if(password.length<6)throw new Error('A nova senha deve ter pelo menos 6 caracteres.');
+  await adminUsers({action:'password',user_id:uid,password});
+  if(input)input.value='';
+  alert('Nova senha definida com sucesso.');
+ }catch(e){alert('Não foi possível alterar a senha: '+e.message)}
+}
+async function setEmployeeBlocked(uid,isActive){
+ const action=isActive?'bloquear':'reativar';
+ if(!confirm('Deseja realmente '+action+' o acesso deste funcionário?'))return;
+ try{
+  const full_name=document.querySelector(`.ep-name[data-u="${uid}"]`)?.value.trim()||'';
+  const email=document.querySelector(`.ep-email[data-u="${uid}"]`)?.value.trim()||'';
+  await adminUsers({action:'update',user_id:uid,full_name,email,active:!isActive});
+  alert(isActive?'Funcionário bloqueado. O acesso ao sistema foi desativado.':'Funcionário reativado.');
+  await loadEmployees();
+ }catch(e){alert('Não foi possível '+action+' o funcionário: '+e.message)}
+}
+async function changeMyPassword(){
+ try{
+  const password=document.getElementById('myNewPassword')?.value||'', confirmPassword=document.getElementById('myConfirmPassword')?.value||'';
+  if(password.length<6)throw new Error('A nova senha deve ter pelo menos 6 caracteres.');
+  if(password!==confirmPassword)throw new Error('As duas senhas não conferem.');
+  const s=await validSession();
+  const r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({password})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.msg||j.message||j.error_description||'Não foi possível alterar a senha.');
+  document.getElementById('myNewPassword').value='';document.getElementById('myConfirmPassword').value='';
+  alert('Sua senha foi alterada com sucesso.');
+ }catch(e){alert(e.message)}
+}
+window.resetEmployeePassword=resetEmployeePassword;
+window.setEmployeeBlocked=setEmployeeBlocked;
 async function saveEmployeePermissions(uid){
  try{
   const municipality_ids=[...document.querySelectorAll(`.ep-city[data-u="${uid}"]:checked`)].map(x=>x.value);
@@ -467,6 +509,7 @@ window.addEventListener('DOMContentLoaded',()=>{
  document.getElementById('signupBtn').onclick=signupOnline;
  document.getElementById('logoutBtn').onclick=logoutOnline;
  document.getElementById('settingsLogout').onclick=logoutOnline;
+document.getElementById('changeMyPasswordBtn').onclick=changeMyPassword;
  document.getElementById('syncBtn').onclick=syncCoreOnline;
  document.getElementById('cloudLoadBtn').onclick=loadCoreOnline;
  document.getElementById('settingsBtn').onclick=()=>{document.getElementById('settingsModal').classList.add('open');loadEmployees();};
