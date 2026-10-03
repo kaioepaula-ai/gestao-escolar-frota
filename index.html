@@ -220,6 +220,16 @@ function applyEmployeePermissions(){
  document.querySelectorAll('.subpage').forEach(el=>{const tab=el.id.replace('sub_','');el.classList.toggle('employee-denied',!allowed.includes(tab))});
  if(!allowed.includes(activeSub)){activeSub=allowed[0]||'abastecimentos';document.querySelectorAll('.subtab,.subpage').forEach(x=>x.classList.remove('active'));document.querySelector(`.subtab[data-sub="${activeSub}"]`)?.classList.add('active');document.getElementById('sub_'+activeSub)?.classList.add('active')}
 }
+async function refreshEmployeePermissions(userId){
+ if(ONLINE_ROLE!=='employee')return true;
+ const uid=userId||currentSession()?.user?.id;
+ if(!uid)throw new Error('Não foi possível identificar o funcionário conectado.');
+ const perms=await api('user_module_permissions?select=module,can_view,can_insert,can_update&user_id=eq.'+encodeURIComponent(uid));
+ const next={};
+ (perms||[]).forEach(x=>next[x.module]={view:!!x.can_view,insert:!!x.can_insert,update:!!x.can_update});
+ ONLINE_PERMS=next;
+ return true;
+}
 async function showApp(session){
  document.getElementById('authGate').style.display='none';
  const email=session.user?.email||'Usuário';
@@ -230,10 +240,7 @@ async function showApp(session){
   const profile=p?.[0];
   ONLINE_ROLE=profile?.role==='admin'?'admin':'employee';
   ONLINE_PERMS={};
-  if(ONLINE_ROLE==='employee'){
-   const perms=await api('user_module_permissions?select=module,can_view,can_insert,can_update&user_id=eq.'+encodeURIComponent(session.user.id));
-   (perms||[]).forEach(x=>ONLINE_PERMS[x.module]={view:!!x.can_view,insert:!!x.can_insert,update:!!x.can_update});
-  }
+  if(ONLINE_ROLE==='employee')await refreshEmployeePermissions(session.user.id);
   const role=ONLINE_ROLE==='admin'?'Administrador':'Funcionário';
   document.body.classList.toggle('employee-mode',ONLINE_ROLE==='employee');
   document.getElementById('settingsBtn').style.display=ONLINE_ROLE==='admin'?'':'none';
@@ -242,7 +249,12 @@ async function showApp(session){
   const sr=document.getElementById('settingsRole'); if(sr)sr.textContent=role;
   const so=document.getElementById('settingsOnline'); if(so)so.textContent=profile?.active===false?'Inativo':'Online / Ativo';
  }catch(e){
-  const sr=document.getElementById('settingsRole'); if(sr)sr.textContent='Usuário autenticado';
+  console.error('Falha ao carregar perfil/permissões',e);
+  ONLINE_ROLE='employee'; ONLINE_PERMS={};
+  document.body.classList.add('employee-mode');
+  const sr=document.getElementById('settingsRole'); if(sr)sr.textContent='Permissões não carregadas';
+  const st=document.getElementById('syncStatus'); if(st)st.textContent='⚠ Atualize as permissões';
+  throw e;
  }
 }
 function showLogin(){document.getElementById('authGate').style.display='flex'}
@@ -495,6 +507,7 @@ async function loadCoreOnline(){
  const status=document.getElementById('syncStatus');
  try{
   status.textContent='☁ Baixando...';
+  if(ONLINE_ROLE==='employee')await refreshEmployeePermissions();
   const [cities,vehicles,drivers,routes,assignments,fuelings,workDays,maintenance,expenses,receivables,driverPayments,documents,messages,profiles,partsPurchases,serviceSales]=await Promise.all([
    api('municipalities?select=*&order=name'),api('vehicles?select=*&order=created_at'),api('drivers?select=*&order=created_at'),
    api('routes?select=*&order=created_at'),api('assignments?select=*&order=created_at'),api('fuelings?select=*&order=fueled_at.desc'),
