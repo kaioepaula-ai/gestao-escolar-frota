@@ -224,11 +224,24 @@ async function refreshEmployeePermissions(userId){
  if(ONLINE_ROLE!=='employee')return true;
  const uid=userId||currentSession()?.user?.id;
  if(!uid)throw new Error('Não foi possível identificar o funcionário conectado.');
- const perms=await api('user_module_permissions?select=module,can_view,can_insert,can_update&user_id=eq.'+encodeURIComponent(uid));
- const next={};
- (perms||[]).forEach(x=>next[x.module]={view:!!x.can_view,insert:!!x.can_insert,update:!!x.can_update});
- ONLINE_PERMS=next;
- return true;
+ let lastError=null;
+ for(let attempt=1;attempt<=3;attempt++){
+  try{
+   const [perms,municipalities]=await Promise.all([
+    api('user_module_permissions?select=module,can_view,can_insert,can_update&user_id=eq.'+encodeURIComponent(uid)),
+    api('user_municipalities?select=municipality_id&user_id=eq.'+encodeURIComponent(uid))
+   ]);
+   const next={};
+   (perms||[]).forEach(x=>next[x.module]={view:!!x.can_view,insert:!!x.can_insert,update:!!x.can_update});
+   ONLINE_PERMS=next;
+   window.ONLINE_MUNICIPALITY_IDS=(municipalities||[]).map(x=>x.municipality_id);
+   return true;
+  }catch(e){
+   lastError=e;
+   if(attempt<3)await new Promise(resolve=>setTimeout(resolve,500*attempt));
+  }
+ }
+ throw lastError||new Error('Não foi possível carregar as permissões.');
 }
 async function showApp(session){
  document.getElementById('authGate').style.display='none';
@@ -517,7 +530,8 @@ async function loadCoreOnline(){
   ]);
   const cityById=Object.fromEntries((cities||[]).map(c=>[c.id,c.name]));
   const local=structuredClone(blank);
-  local.cities=(cities||[]).map(x=>({id:x.id,name:x.name,active:x.active!==false}));
+  const allowedCityIds=ONLINE_ROLE==='employee'?new Set(window.ONLINE_MUNICIPALITY_IDS||[]):null;
+  local.cities=(cities||[]).filter(x=>!allowedCityIds||allowedCityIds.has(x.id)).map(x=>({id:x.id,name:x.name,active:x.active!==false}));
   local.userOptions=(profiles||[]).filter(p=>p.active!==false&&p.role!=='admin').map(p=>({id:p.id,name:p.full_name||'Usuário'})).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
   local.vehicles=(vehicles||[]).map(x=>({id:x.id,city:cityById[x.municipality_id]||'',plate:x.plate||'',model:x.model||'',year:x.year||'',km:Number(x.current_km||0),crlvExpiry:x.crlv_expiry||'',active:x.active!==false,createdBy:x.created_by||'',createdByName:(profiles||[]).find(p=>p.id===x.created_by)?.full_name||'Usuário'}));
   local.drivers=(drivers||[]).map(x=>({id:x.id,city:cityById[x.municipality_id]||'',name:x.name||'',cnh:x.cnh||'',value:Number(x.monthly_value||0),bank:x.bank||'',agency:x.agency||'',account:x.account||'',accountType:x.account_type||'',pix:x.pix||'',operation:x.operation||'',active:x.active!==false,createdBy:x.created_by||'',createdByName:(profiles||[]).find(p=>p.id===x.created_by)?.full_name||'Usuário'}));
