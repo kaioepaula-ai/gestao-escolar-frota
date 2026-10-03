@@ -272,7 +272,26 @@ async function showApp(session){
 }
 function showLogin(){document.getElementById('authGate').style.display='flex'}
 async function authRequest(path,body){const r=await fetch(SUPABASE_URL+'/auth/v1/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.msg||j.message||j.error_description||'Não foi possível concluir o acesso.');return j}
-async function loginOnline(){try{setAuthStatus('Entrando...');const email=document.getElementById('authEmail').value.trim().toLowerCase(),password=document.getElementById('authPassword').value;if(!email||!password)throw new Error('Informe e-mail e senha.');const j=await authRequest('token?grant_type=password',{email,password});localStorage.setItem(AUTH_STORE,JSON.stringify(j));await showApp(j);await loadCoreOnline();setAuthStatus('Acesso realizado.')}catch(e){setAuthStatus(e.message,true)}}
+async function loginOnline(){
+ try{
+  setAuthStatus('Entrando...');
+  const email=document.getElementById('authEmail').value.trim().toLowerCase(),password=document.getElementById('authPassword').value;
+  if(!email||!password)throw new Error('Informe e-mail e senha.');
+  const j=await authRequest('token?grant_type=password',{email,password});
+  localStorage.setItem(AUTH_STORE,JSON.stringify(j));
+  setAuthStatus('Login confirmado. Carregando acesso...');
+  try{
+   await showApp(j);
+   const ok=await loadCoreOnline();
+   setAuthStatus(ok?'Acesso realizado.':'Acesso realizado. Toque em Atualizar online para sincronizar.');
+  }catch(syncError){
+   console.error('Login confirmado; falha temporária na sincronização',syncError);
+   document.getElementById('authGate').style.display='none';
+   setAuthStatus('Login confirmado. Sincronização pendente.');
+   setTimeout(()=>loadCoreOnline().catch(()=>{}),1200);
+  }
+ }catch(e){setAuthStatus(e.message,true)}
+}
 async function signupOnline(){try{setAuthStatus('Criando acesso...');const email=document.getElementById('authEmail').value.trim().toLowerCase(),password=document.getElementById('authPassword').value;if(password.length<6)throw new Error('Crie uma senha com pelo menos 6 caracteres.');await authRequest('signup',{email,password,data:{full_name:email==='yellowrentacar@hotmail.com'?'Administrador':'Funcionário'}});setAuthStatus('Cadastro criado. Se o e-mail pedir confirmação, confirme e depois clique em Entrar.')}catch(e){setAuthStatus(e.message,true)}}
 function currentSession(){try{return JSON.parse(localStorage.getItem(AUTH_STORE)||'null')}catch(e){return null}}
 async function refreshSession(){
@@ -568,7 +587,16 @@ document.getElementById('changeMyPasswordBtn').onclick=changeMyPassword;
  document.getElementById('createEmployeeBtn').onclick=createEmployee;
  document.getElementById('closeSettings').onclick=()=>document.getElementById('settingsModal').classList.remove('open');
  document.getElementById('settingsModal').addEventListener('click',e=>{if(e.target.id==='settingsModal')e.currentTarget.classList.remove('open')});
- try{const s=JSON.parse(localStorage.getItem(AUTH_STORE)||'null');if(s?.access_token&&s?.user){showApp(s).then(()=>loadCoreOnline());}else showLogin()}catch(e){showLogin()}
+ try{
+  const s=JSON.parse(localStorage.getItem(AUTH_STORE)||'null');
+  if(s?.access_token&&s?.user){
+   showApp(s).then(()=>loadCoreOnline()).catch(e=>{
+    console.error('Falha ao restaurar sessão/sincronizar',e);
+    document.getElementById('authGate').style.display='none';
+    setTimeout(()=>loadCoreOnline().catch(()=>{}),1200);
+   });
+  }else showLogin();
+ }catch(e){showLogin()}
 });
 
 const $=id=>document.getElementById(id), STORE='gef_v3';
