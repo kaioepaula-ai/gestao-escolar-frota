@@ -704,16 +704,16 @@ function renderMunicipios(){
  if(!selectedCity){$('cityArea').innerHTML='';return}
  const hm=histMonth();
  const routes=cityRoutes(selectedCity).filter(r=>!hm||r.month===hm),rids=new Set(routes.map(r=>r.id));
- const allCityLinks=cityLinks(selectedCity),links=allCityLinks.filter(l=>(!hm||monthOf(l.start)===hm||(!l.start&&true))&&registryByUser(l)),vids=cityVehicleIds(selectedCity),dids=cityDriverIds(selectedCity);
  const registryUserFilter=(window.registryUserFilter||'all'),registryByUser=x=>ONLINE_ROLE!=='admin'||registryUserFilter==='all'||x.createdBy===registryUserFilter;
+ const allCityLinks=cityLinks(selectedCity),links=allCityLinks.filter(l=>(!hm||monthOf(l.start)===hm||(!l.start&&true))&&registryByUser(l)),vids=cityVehicleIds(selectedCity),dids=cityDriverIds(selectedCity);
  const vehiclesAll=db.vehicles.filter(v=>vids.has(v.id)),vehicles=vehiclesAll.filter(registryByUser);
  const accountRank=d=>{const t=(d.accountType||'').toLowerCase(),hasPix=!!(d.pix||'').trim();if(t.includes('corrente'))return 0;if(t.includes('poup'))return 1;if(t.includes('pix')||(!t&&hasPix))return 2;return 3};
  const accountClass=d=>{const r=accountRank(d);return r===0?'account-current':r===1?'account-savings':r===2?'account-pix':'account-other'};
  const driverMap=new Map();db.drivers.filter(d=>dids.has(d.id)).forEach(d=>{const key=d.id||[(d.name||'').trim().toLowerCase(),(d.account||'').trim(),(d.pix||'').trim()].join('|');if(!driverMap.has(key))driverMap.set(key,d)});
  const driversAll=[...driverMap.values()].sort((a,b)=>accountRank(a)-accountRank(b)||a.name.localeCompare(b.name,'pt-BR'));
  const drivers=driversAll.filter(registryByUser);
- const schoolFuelAll=db.fuel.filter(x=>(x.fuelingType||'school')==='school'&&vids.has(x.vehicleId)&&(!hm||monthOf(x.date)===hm)),fuelUserFilter=(window.schoolFuelUserFilter||'all'),fuel=ONLINE_ROLE==='admin'&&fuelUserFilter!=='all'?schoolFuelAll.filter(x=>x.createdBy===fuelUserFilter):schoolFuelAll,machineFuelAll=db.fuel.filter(x=>x.fuelingType==='machine'&&(!hm||monthOf(x.date)===hm)&&(!x.city||x.city===selectedCity)),machineFuel=ONLINE_ROLE==='admin'&&fuelUserFilter!=='all'?machineFuelAll.filter(x=>x.createdBy===fuelUserFilter):machineFuelAll,att=db.attendance.filter(x=>rids.has(x.routeId)&&(!hm||x.month===hm)&&byUser(x)),maint=db.maintenance.filter(x=>vids.has(x.vehicleId)&&(!hm||monthOf(x.date)===hm)&&byUser(x));
  const userFilter=(window.recordUserFilter||'all'),byUser=x=>ONLINE_ROLE!=='admin'||userFilter==='all'||x.createdBy===userFilter;
+ const schoolFuelAll=db.fuel.filter(x=>(x.fuelingType||'school')==='school'&&vids.has(x.vehicleId)&&(!hm||monthOf(x.date)===hm)),fuelUserFilter=(window.schoolFuelUserFilter||'all'),fuel=ONLINE_ROLE==='admin'&&fuelUserFilter!=='all'?schoolFuelAll.filter(x=>x.createdBy===fuelUserFilter):schoolFuelAll,machineFuelAll=db.fuel.filter(x=>x.fuelingType==='machine'&&(!hm||monthOf(x.date)===hm)&&(!x.city||x.city===selectedCity)),machineFuel=ONLINE_ROLE==='admin'&&fuelUserFilter!=='all'?machineFuelAll.filter(x=>x.createdBy===fuelUserFilter):machineFuelAll,att=db.attendance.filter(x=>rids.has(x.routeId)&&(!hm||x.month===hm)&&byUser(x)),maint=db.maintenance.filter(x=>vids.has(x.vehicleId)&&(!hm||monthOf(x.date)===hm)&&byUser(x));
  const parts=(db.parts||[]).filter(x=>vids.has(x.vehicleId)&&(!hm||monthOf(x.date)===hm)&&byUser(x));
  const sales=(db.sales||[]).filter(x=>(!hm||monthOf(x.date)===hm)&&byUser(x));
  const docs=db.documents.filter(x=>(x.ownerType==='Motorista'?dids:vids).has(x.ownerId)&&byUser(x)),rec=db.receivables.filter(x=>rids.has(x.routeId)&&(!hm||x.month===hm)&&byUser(x)),exp=db.expenses.filter(x=>(rids.has(x.routeId)||vids.has(x.vehicleId))&&(!hm||monthOf(x.date)===hm)&&byUser(x));
