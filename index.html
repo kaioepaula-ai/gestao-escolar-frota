@@ -78,7 +78,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
  </div>
 </div>
 
-<header><div class="brand"><img src="/icon.svg" alt="ADM YELLOW RIVER"><h1>ADM YELLOW RIVER</h1></div><div class="header-right"><span class="user-badge" id="onlineUser">V6.0 • Online</span><button class="header-btn" id="notesBtn" type="button">📝 Bloco de notas <span class="msg-count" id="noteCount">0</span></button><button class="header-btn" id="messagesBtn">💬 Recados <span class="msg-count" id="msgCount">0</span></button><button class="header-btn" id="syncBtn" type="button">☁ Enviar</button><button class="header-btn" id="cloudLoadBtn" type="button">↻ Atualizar online</button><span class="user-badge" id="syncStatus">Local preservado</span><button class="header-btn" id="settingsBtn" type="button">⚙️ Configurações</button><button class="header-btn" id="logoutBtn" type="button">🚪 Sair</button></div></header>
+<header><div class="brand"><img src="/icon.svg" alt="ADM YELLOW RIVER"><h1>ADM YELLOW RIVER</h1></div><div class="header-right"><span class="user-badge" id="onlineUser">V6.0 • Online</span><button class="header-btn" id="notesBtn" type="button">📝 Bloco de notas <span class="msg-count" id="noteCount">0</span></button><button class="header-btn" id="messagesBtn">💬 Recados <span class="msg-count" id="msgCount">0</span></button><button class="header-btn" id="syncBtn" type="button">☁ Enviar</button><button class="header-btn" id="cloudLoadBtn" type="button">↻ Atualizar online</button><span class="user-badge" id="syncStatus">Local preservado</span><button class="header-btn" id="myPasswordBtn" type="button">🔐 Minha senha</button><button class="header-btn" id="settingsBtn" type="button">⚙️ Configurações</button><button class="header-btn" id="logoutBtn" type="button">🚪 Sair</button></div></header>
 <div class="wrap">
 <nav id="nav">
 <button class="active" data-page="painel">Painel</button>
@@ -157,6 +157,7 @@ body.employee-mode #syncBtn{display:inline-block!important}
 </main></div><button class="bottom-help-btn" id="helpBtn" type="button">❓ Ajuda</button>
 
 
+<div class="modal" id="myPasswordModal"><div class="modal-card"><div class="modal-head"><div><h2 style="margin:0">🔐 Alterar minha senha</h2><p class="note" style="margin-top:4px">Esta alteração afeta somente a sua própria conta.</p></div><button class="closebtn" id="closeMyPassword">×</button></div><div class="card"><div class="row2"><label>Nova senha<input id="userNewPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></label><label>Confirmar nova senha<input id="userConfirmPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Digite novamente"></label></div><button class="primary" id="userChangePasswordBtn" type="button">🔐 Alterar minha senha</button></div></div></div>
 <div class="modal" id="settingsModal"><div class="modal-card">
 <div class="modal-head"><div><h2 style="margin:0">⚙️ Configurações</h2><p class="note" style="margin-top:4px">Conta, acesso e administração do sistema.</p></div><button class="closebtn" id="closeSettings">×</button></div>
 <div class="card">
@@ -596,6 +597,10 @@ window.addEventListener('DOMContentLoaded',()=>{
 document.getElementById('changeMyPasswordBtn').onclick=changeMyPassword;
  document.getElementById('syncBtn').onclick=syncCoreOnline;
  document.getElementById('cloudLoadBtn').onclick=loadCoreOnline;
+ document.getElementById('myPasswordBtn').onclick=()=>document.getElementById('myPasswordModal').classList.add('open');
+ document.getElementById('closeMyPassword').onclick=()=>document.getElementById('myPasswordModal').classList.remove('open');
+ document.getElementById('myPasswordModal').addEventListener('click',e=>{if(e.target.id==='myPasswordModal')e.currentTarget.classList.remove('open')});
+ document.getElementById('userChangePasswordBtn').onclick=async()=>{const a=document.getElementById('userNewPassword'),b=document.getElementById('userConfirmPassword'),oldA=document.getElementById('myNewPassword'),oldB=document.getElementById('myConfirmPassword');oldA.value=a.value;oldB.value=b.value;await changeMyPassword();if(!oldA.value&&!oldB.value){a.value='';b.value='';document.getElementById('myPasswordModal').classList.remove('open')}};
  document.getElementById('settingsBtn').onclick=()=>{document.getElementById('settingsModal').classList.add('open');loadEmployees();};
  document.getElementById('createEmployeeBtn').onclick=createEmployee;
  document.getElementById('closeSettings').onclick=()=>document.getElementById('settingsModal').classList.remove('open');
