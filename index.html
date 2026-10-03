@@ -575,7 +575,7 @@ async function loadCoreOnline(){
   if(ONLINE_ROLE!=='employee') save(local);
   status.textContent='☁ Online atualizado';
   if(ONLINE_ROLE==='employee'){selectedCity=allCities()[0]||'';activeSub=Object.entries(EMPLOYEE_TAB_MODULE).find(([t,m])=>canEmployee(m,'view'))?.[0]||'abastecimentos';document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page==='municipios'));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='municipios'));}
-  render(); applyEmployeePermissions(); const nb=document.getElementById('notesBtn');if(nb)nb.style.display='';loadUserNotes(true); return true;
+  render(); applyEmployeePermissions(); const nb=document.getElementById('notesBtn');const notesAllowed=ONLINE_ROLE!=='employee'||canEmployee('notes','view');if(nb)nb.style.display=notesAllowed?'':'none';if(notesAllowed)loadUserNotes(true); return true;
  }catch(e){console.error(e);status.textContent='⚠ Falha ao atualizar';alert('Falha ao baixar a base online: '+e.message);return false;}
 }
 
@@ -588,7 +588,7 @@ window.deleteUserNote=async id=>{if(!confirm('Excluir esta anotação?'))return;
 window.addEventListener('DOMContentLoaded',()=>{
  document.getElementById('loginBtn').onclick=loginOnline;
  document.getElementById('togglePasswordBtn').onclick=()=>{const p=document.getElementById('authPassword'),b=document.getElementById('togglePasswordBtn'),show=p.type==='password';p.type=show?'text':'password';b.textContent=show?'🙈':'👁️';b.setAttribute('aria-label',show?'Ocultar senha':'Mostrar senha')};
- document.getElementById('notesBtn').onclick=async()=>{document.getElementById('notesModal').classList.add('open');await loadUserNotes(false)};
+ document.getElementById('notesBtn').onclick=async()=>{if(ONLINE_ROLE==='employee'&&!canEmployee('notes','view')){alert('Você não tem permissão para acessar o Bloco de notas.');return}document.getElementById('notesModal').classList.add('open');await loadUserNotes(false)};
  document.getElementById('closeNotes').onclick=()=>document.getElementById('notesModal').classList.remove('open');
  document.getElementById('saveNoteBtn').onclick=saveUserNote;
  document.getElementById('notesModal').addEventListener('click',e=>{if(e.target.id==='notesModal')e.currentTarget.classList.remove('open')});
