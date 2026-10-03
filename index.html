@@ -229,11 +229,11 @@ async function refreshEmployeePermissions(userId){
  for(let attempt=1;attempt<=3;attempt++){
   try{
    const [perms,municipalities]=await Promise.all([
-    api('user_module_permissions?select=module,can_view,can_insert,can_update&user_id=eq.'+encodeURIComponent(uid)),
+    api('user_module_permissions?select=module,can_view,can_insert,can_update,can_delete&user_id=eq.'+encodeURIComponent(uid)),
     api('user_municipalities?select=municipality_id&user_id=eq.'+encodeURIComponent(uid))
    ]);
    const next={};
-   (perms||[]).forEach(x=>next[x.module]={view:!!x.can_view,insert:!!x.can_insert,update:!!x.can_update});
+   (perms||[]).forEach(x=>next[x.module]={view:!!x.can_view,insert:!!x.can_insert,update:!!x.can_update,delete:!!x.can_delete});
    ONLINE_PERMS=next;
    window.ONLINE_MUNICIPALITY_IDS=(municipalities||[]).map(x=>x.municipality_id);
    return true;
@@ -432,11 +432,11 @@ async function loadEmployees(){
   const cities=Array.isArray(citiesOnline)?citiesOnline:[];
   const employees=(out.users||[]).filter(u=>String(u.email||'').toLowerCase()!=='yellowrentacar@hotmail.com');
   if(!employees.length){box.innerHTML='<div class="empty">Nenhum funcionário cadastrado.</div>';return;}
-  const mods=[['summary','Resumo'],['vehicles','Veículos'],['drivers','Motoristas'],['assignments','Vínculos'],['fuelings','Abastecimento Escolar'],['machine_fuelings','Abastecimento Máquinas'],['parts_purchases','Casa de Peças'],['service_sales_prefeitura','Prefeitura'],['service_sales_diego','Diego'],['service_sales_outros','Outros Serviços'],['work_days','Dias trabalhados'],['km','KM'],['maintenance','Manutenção'],['documents','Documentos'],['expenses','Despesas Extras'],['routes','Contratos / Rotas'],['receivables','Faturamentos'],['finance','Financeiro'],['messages','Recados']];
+  const mods=[['summary','Resumo'],['vehicles','Veículos'],['drivers','Motoristas'],['assignments','Vínculos'],['fuelings','Abastecimento Escolar'],['machine_fuelings','Abastecimento Máquinas'],['parts_purchases','Casa de Peças'],['service_sales_prefeitura','Prefeitura'],['service_sales_diego','Diego'],['service_sales_outros','Outros Serviços'],['work_days','Dias trabalhados'],['km','KM'],['maintenance','Manutenção'],['documents','Documentos'],['expenses','Despesas Extras'],['routes','Contratos / Rotas'],['receivables','Faturamentos'],['finance','Financeiro'],['messages','Recados'],['notes','Bloco de notas / Lembretes']];
   box.innerHTML=employees.map(u=>{
    const mids=u.municipalities||[], ps=u.permissions||[], active=u.profile?.active!==false;
    const cityChecks=cities.map(city=>`<label style="display:inline-flex;align-items:center;gap:5px;margin:4px 12px 4px 0"><input type="checkbox" class="ep-city" data-u="${u.id}" value="${city.id}" ${mids.includes(city.id)?'checked':''}> ${esc(city.name)}</label>`).join('');
-   const rows=mods.map(([m,n])=>{const p=ps.find(x=>x.module===m)||{};return `<tr><td><b>${n}</b></td><td><input type="checkbox" class="ep-perm" data-u="${u.id}" data-m="${m}" data-p="view" ${p.can_view?'checked':''}></td><td><input type="checkbox" class="ep-perm" data-u="${u.id}" data-m="${m}" data-p="insert" ${p.can_insert?'checked':''}></td><td><input type="checkbox" class="ep-perm" data-u="${u.id}" data-m="${m}" data-p="update" ${p.can_update?'checked':''}></td></tr>`}).join('');
+   const rows=mods.map(([m,n])=>{const p=ps.find(x=>x.module===m)||{};return `<tr><td><b>${n}</b></td><td><input type="checkbox" class="ep-perm" data-u="${u.id}" data-m="${m}" data-p="view" ${p.can_view?'checked':''}></td><td><input type="checkbox" class="ep-perm" data-u="${u.id}" data-m="${m}" data-p="insert" ${p.can_insert?'checked':''}></td><td><input type="checkbox" class="ep-perm" data-u="${u.id}" data-m="${m}" data-p="update" ${p.can_update?'checked':''}></td><td><input type="checkbox" class="ep-perm" data-u="${u.id}" data-m="${m}" data-p="delete" ${p.can_delete?'checked':''}></td></tr>`}).join('');
    return `<details class="card employee-card employee-permission-profile" data-uid="${u.id}" style="margin:10px 0">
     <summary class="employee-profile-summary"><span><b id="emp-title-${u.id}">${esc(u.profile?.full_name||u.email||'Funcionário')}</b><span class="note employee-profile-email">${esc(u.email||'')}</span></span><span class="employee-profile-arrow">▶</span></summary>
     <div class="employee-profile-body">
@@ -449,7 +449,7 @@ async function loadEmployees(){
       </div>
       <p><b>Municípios liberados:</b><br>${cityChecks||'<span class="note">Não há municípios ativos no banco online.</span>'}</p>
       <p><b>Permissões por módulo:</b></p>
-      <div style="overflow:auto"><table><thead><tr><th>Módulo</th><th>Visualizar</th><th>Adicionar</th><th>Editar</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div style="overflow:auto"><table><thead><tr><th>Módulo</th><th>Visualizar</th><th>Adicionar</th><th>Editar</th><th>Excluir</th></tr></thead><tbody>${rows}</tbody></table></div>
       <label style="display:flex;align-items:center;gap:7px;margin-top:12px"><input style="width:auto;margin:0" type="checkbox" class="ep-admin" data-u="${u.id}" onchange="toggleEmployeeAdminAll('${u.id}',this.checked)" ${u.profile?.role==='admin'?'checked':''}> <b>Administrador — acesso completo aos módulos</b></label>
       <p class="note">Ao marcar Administrador, todos os municípios e todas as permissões deste perfil são selecionados automaticamente. Os controles de usuários e segurança continuam exclusivos do administrador principal.</p>
       <button class="primary" type="button" onclick="saveEmployeePermissions('${u.id}')">Salvar permissões</button>
@@ -525,8 +525,8 @@ async function saveEmployeePermissions(uid){
   if(administer_system)toggleEmployeeAdminAll(uid,true);
   const municipality_ids=[...document.querySelectorAll(`.ep-city[data-u="${uid}"]:checked`)].map(x=>x.value);
   const permission_details={};
-  document.querySelectorAll(`.ep-perm[data-u="${uid}"]`).forEach(x=>{permission_details[x.dataset.m]??={can_view:false,can_insert:false,can_update:false};permission_details[x.dataset.m]['can_'+x.dataset.p]=x.checked});
-  const modules=Object.entries(permission_details).filter(([,p])=>p.can_view||p.can_insert||p.can_update).map(([m])=>m);
+  document.querySelectorAll(`.ep-perm[data-u="${uid}"]`).forEach(x=>{permission_details[x.dataset.m]??={can_view:false,can_insert:false,can_update:false,can_delete:false};permission_details[x.dataset.m]['can_'+x.dataset.p]=x.checked});
+  const modules=Object.entries(permission_details).filter(([,p])=>p.can_view||p.can_insert||p.can_update||p.can_delete).map(([m])=>m);
   await adminUsers({action:'permissions',user_id:uid,municipality_ids,modules,permission_details,administer_system});
   alert('Permissões salvas.');
   await loadEmployees();
@@ -572,7 +572,7 @@ async function loadCoreOnline(){
   if(ONLINE_ROLE!=='employee') save(local);
   status.textContent='☁ Online atualizado';
   if(ONLINE_ROLE==='employee'){selectedCity=allCities()[0]||'';activeSub=Object.entries(EMPLOYEE_TAB_MODULE).find(([t,m])=>canEmployee(m,'view'))?.[0]||'abastecimentos';document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page==='municipios'));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='municipios'));}
-  render(); applyEmployeePermissions(); loadUserNotes(true); return true;
+  render(); applyEmployeePermissions(); const nb=document.getElementById('notesBtn');if(nb)nb.style.display=(ONLINE_ROLE!=='employee'||canEmployee('notes','view'))?'':'none';if(ONLINE_ROLE!=='employee'||canEmployee('notes','view'))loadUserNotes(true); return true;
  }catch(e){console.error(e);status.textContent='⚠ Falha ao atualizar';alert('Falha ao baixar a base online: '+e.message);return false;}
 }
 
@@ -585,7 +585,7 @@ window.deleteUserNote=async id=>{if(!confirm('Excluir esta anotação?'))return;
 window.addEventListener('DOMContentLoaded',()=>{
  document.getElementById('loginBtn').onclick=loginOnline;
  document.getElementById('togglePasswordBtn').onclick=()=>{const p=document.getElementById('authPassword'),b=document.getElementById('togglePasswordBtn'),show=p.type==='password';p.type=show?'text':'password';b.textContent=show?'🙈':'👁️';b.setAttribute('aria-label',show?'Ocultar senha':'Mostrar senha')};
- document.getElementById('notesBtn').onclick=async()=>{document.getElementById('notesModal').classList.add('open');await loadUserNotes(false)};
+ document.getElementById('notesBtn').onclick=async()=>{if(ONLINE_ROLE==='employee'&&!canEmployee('notes','view')){alert('Você não tem permissão para acessar o Bloco de notas.');return}document.getElementById('notesModal').classList.add('open');await loadUserNotes(false)};
  document.getElementById('closeNotes').onclick=()=>document.getElementById('notesModal').classList.remove('open');
  document.getElementById('saveNoteBtn').onclick=saveUserNote;
  document.getElementById('notesModal').addEventListener('click',e=>{if(e.target.id==='notesModal')e.currentTarget.classList.remove('open')});
