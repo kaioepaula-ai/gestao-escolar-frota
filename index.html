@@ -58,7 +58,15 @@ body.employee-mode #syncBtn{display:inline-block!important}
 .dashboard-hero{background:linear-gradient(135deg,#17233b,#294d86);color:#fff;border-radius:18px;padding:22px;margin-bottom:16px;box-shadow:0 12px 32px rgba(23,35,59,.16)}
 .dashboard-hero h2{margin:0 0 6px;font-size:25px}.dashboard-hero p{margin:0;color:#dbe7ff}.card{box-shadow:0 3px 14px rgba(16,24,40,.04);transition:transform .15s ease,box-shadow .15s ease}.card:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(16,24,40,.08)}
 .cards .card{position:relative;overflow:hidden}.cards .card:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#2563eb}.value{letter-spacing:-.4px}.page h2{letter-spacing:-.4px}nav button{transition:.15s ease}.badge{font-weight:700}.empty{background:#fbfcfe}
-@media(max-width:560px){.dashboard-hero{padding:18px;border-radius:14px}.dashboard-hero h2{font-size:21px}.header-right{gap:5px}.header-btn{padding:8px 9px}}
+@media(max-width:560px){.dashboard-hero{padding:18px;border-radius:14px}.dashboard-hero h2{font-size:21px}.header-right{gap:5px}.header-btn{padding:8px 9px}
+header{height:auto;min-height:64px;padding:8px 10px;align-items:flex-start;gap:8px;position:sticky;top:0}
+header .brand{flex:0 0 auto;padding-top:2px}header .brand img{width:36px;height:36px}header .brand h1{font-size:14px;max-width:92px;line-height:1.1}
+.header-right{flex:1 1 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;justify-content:stretch;align-items:stretch;min-width:0}
+.header-right .user-badge{grid-column:1/-1;display:block;white-space:normal;overflow-wrap:anywhere;padding:5px 7px;font-size:11px;line-height:1.2}
+.header-right .header-btn{width:100%;min-width:0;padding:7px 5px;font-size:11px;line-height:1.15;white-space:normal}
+#syncStatus{grid-column:1/-1;text-align:center}
+nav{top:0;position:relative}
+}
 </style>
 
 <style>
