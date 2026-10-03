@@ -1,12 +1,26 @@
-const CACHE='gestao-frota-shell-v2';
-self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/icon.svg'])).catch(()=>{}))});
-self.addEventListener('activate',e=>e.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()])));
-self.addEventListener('fetch',e=>{
- if(e.request.method!=='GET')return;
- const u=new URL(e.request.url);
- if(e.request.mode==='navigate'||u.pathname==='/'||u.pathname==='/index.html'){
-  e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));
+const CACHE='gestao-frota-shell-v4';
+self.addEventListener('install',event=>{
+ self.skipWaiting();
+ event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['/manifest.webmanifest','/icon.svg'])).catch(()=>{}));
+});
+self.addEventListener('activate',event=>{
+ event.waitUntil((async()=>{
+  const keys=await caches.keys();
+  await Promise.all(keys.map(key=>caches.delete(key)));
+  await self.clients.claim();
+ })());
+});
+self.addEventListener('fetch',event=>{
+ if(event.request.method!=='GET')return;
+ const url=new URL(event.request.url);
+ if(url.origin===self.location.origin&&(event.request.mode==='navigate'||url.pathname==='/'||url.pathname==='/index.html'||url.pathname==='/sw.js')){
+  event.respondWith(fetch(event.request,{cache:'no-store'}).catch(()=>caches.match(event.request)));
   return;
  }
- e.respondWith(fetch(e.request).then(r=>{if(r&&r.ok&&u.origin===location.origin){const x=r.clone();caches.open(CACHE).then(c=>c.put(e.request,x))}return r}).catch(()=>caches.match(e.request)));
+ if(url.origin===self.location.origin){
+  event.respondWith(fetch(event.request,{cache:'no-store'}).then(response=>{
+   if(response&&response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy))}
+   return response;
+  }).catch(()=>caches.match(event.request)));
+ }
 });
