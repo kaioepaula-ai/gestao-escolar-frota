@@ -691,7 +691,7 @@ window.addCityRecord=async(type)=>{
    if(!cityRow)throw new Error('Município não autorizado.');
    if(type==='attendance')await api('work_days',{method:'POST',body:JSON.stringify({municipality_id:cityRow.id,route_id:g('caRoute'),work_date:(g('caMonth')||nowMonth())+'-01',status:'summary',notes:JSON.stringify({planned:+g('caPlanned')||0,worked:+g('caWorked')||0,obs:g('caObs').trim()}),created_by:currentSession().user.id})});
    if(type==='maintenance')await api('maintenance',{method:'POST',body:JSON.stringify({municipality_id:cityRow.id,vehicle_id:g('cmVehicle'),service_date:g('cmDate'),description:g('cmService').trim(),amount:parseBRL(g('cmValue')),next_km:+g('cmNextKm')||null,next_date:g('cmNextDate')||null,created_by:currentSession().user.id})});
-   if(type==='document')await api('documents',{method:'POST',body:JSON.stringify({municipality_id:cityRow.id,owner_type:g('cdoType')==='Motorista'?'driver':'vehicle',owner_id:g('cdoOwner'),title:g('cdoName').trim(),document_type:g('cdoName').trim(),expiry_date:g('cdoExpiry')||null,notes:g('cdoObs').trim()})});
+   if(type==='document')await api('documents',{method:'POST',body:JSON.stringify({municipality_id:cityRow.id,owner_type:g('cdoType')==='Motorista'?'driver':'vehicle',owner_id:g('cdoOwner'),title:g('cdoName').trim(),document_type:g('cdoName').trim(),expiry_date:g('cdoExpiry')||null,notes:g('cdoObs').trim(),created_by:currentSession().user.id})});
    syncMsg('✓ Salvo online');await loadCoreOnline();return;
   }catch(e){syncMsg('Falha ao salvar',true);alert('Não foi possível salvar: '+e.message);return}
  }
@@ -724,7 +724,7 @@ window.addCityRecord=async(type)=>{
   const retained=gross*percent/100,net=gross-retained,r=db.routes.find(x=>x.id===routeId);
   const cityRow=(await api('municipalities?select=id&name=eq.'+encodeURIComponent(r?.city||selectedCity)))?.[0];
   if(!cityRow)throw new Error('Município do faturamento não encontrado.');
-  await api('receivables',{method:'POST',body:JSON.stringify({municipality_id:cityRow.id,route_id:routeId,competence:month+'-01',description:'Faturamento '+invoice,invoice_number:invoice||null,gross_amount:gross,retention_percent:percent,retained_amount:retained,net_amount:net,amount:net,due_date:due||null,received_at:status==='Pago'?todayLocal():null,status:status==='Pago'?'received':'pending'})});
+  await api('receivables',{method:'POST',body:JSON.stringify({municipality_id:cityRow.id,route_id:routeId,competence:month+'-01',description:'Faturamento '+invoice,invoice_number:invoice||null,gross_amount:gross,retention_percent:percent,retained_amount:retained,net_amount:net,amount:net,due_date:due||null,received_at:status==='Pago'?todayLocal():null,status:status==='Pago'?'received':'pending',created_by:currentSession().user.id})});
   await loadCoreOnline();selectedCity=r?.city||selectedCity;activeSub='receber';renderMunicipios();alert('Faturamento registrado com sucesso.');return
  }catch(e){alert('Não foi possível registrar o faturamento: '+e.message);return}}
  if(type==='expense')db.expenses.push({id:uid(),date:g('ceDate'),typeName:g('ceType').trim(),value:parseBRL(g('ceValue')),vehicleId:g('ceVehicle'),routeId:g('ceRoute')});
