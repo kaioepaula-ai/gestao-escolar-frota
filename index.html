@@ -1199,16 +1199,17 @@ $('helpSearch').addEventListener('input',e=>renderHelp(e.target.value));
 $('historyMonth').value=nowMonth();
 render();renderMessages();renderHelp();
 if('serviceWorker' in navigator)window.addEventListener('load',async()=>{
+ let refreshing=false;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{
+  if(refreshing)return;refreshing=true;location.reload();
+ });
  try{
-  const reg=await navigator.serviceWorker.register('/sw.js?v=4',{updateViaCache:'none'});
-  await reg.update();
-  let refreshing=false;
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{
-   if(refreshing)return;
-   refreshing=true;
-   location.reload();
-  });
-  setInterval(()=>reg.update().catch(()=>{}),5*60*1000);
+  const reg=await navigator.serviceWorker.register('/sw.js?v=8',{updateViaCache:'none'});
+  const checkUpdate=()=>reg.update().catch(()=>{});
+  await checkUpdate();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkUpdate()});
+  window.addEventListener('online',checkUpdate);
+  setInterval(checkUpdate,5*60*1000);
  }catch(e){console.error('Falha ao atualizar aplicativo',e)}
 });
 </script>
