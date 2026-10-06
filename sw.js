@@ -1,4 +1,4 @@
-const CACHE='gestao-frota-shell-v7';
+const CACHE='gestao-frota-shell-v8';
 self.addEventListener('install',event=>{
  self.skipWaiting();
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['/manifest.webmanifest','/icon.svg'])).catch(()=>{}));
