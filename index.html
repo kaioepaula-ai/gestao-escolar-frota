@@ -439,8 +439,25 @@ async function api(path,opts={},retried=false){
   try{s=await refreshSession();return api(path,opts,true)}catch(e){localStorage.removeItem(AUTH_STORE);showLogin();throw new Error('Sua sessão expirou. Entre novamente.')}
  }
  const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){j=txt}
- if(!r.ok)throw new Error((j&&j.message)||('Erro online '+r.status));return j
+ if(!r.ok)throw new Error((j&&j.message)||('Erro online '+r.status));
+ const method=(opts.method||'GET').toUpperCase(),table=path.split('?')[0];
+ if(['POST','PATCH','DELETE'].includes(method)&&!table.startsWith('rpc/')&&table!=='fueling_recovery_copies'){
+  if(!Array.isArray(j)||!j.length||j.some(row=>!row?.id))throw new Error('O banco não confirmou a operação. Confira sua permissão e atualize os dados antes de tentar novamente.');
+ }
+ return j
 }
+
+async function apiAll(path){
+ const base=path+(path.includes('?')?'&':'?');
+ const ordered=/[?&]order=/.test(path)?base.replace(/order=([^&]+)/,(_,value)=>'order='+value+',id'):base+'order=id&';
+ const rows=[];
+ for(let offset=0;;offset+=200){
+  const page=await api(ordered+'limit=200&offset='+offset);
+  if(!Array.isArray(page))throw new Error('Resposta inválida ao carregar a lista. Os dados anteriores foram mantidos.');
+  rows.push(...page);if(page.length<200)return rows;
+ }
+}
+
 function syncMsg(t,bad=false){const e=$('syncStatus');if(e){e.textContent=t;e.style.background=bad?'#7f1d1d':'#ffffff22'}}
 
 async function uploadServiceReceipt(file){if(!file)return'';const sess=currentSession();const ext=(file.name.split('.').pop()||'jpg').replace(/[^a-zA-Z0-9]/g,'');const path=`${sess.user.id}/services/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;const r=await fetch(SUPABASE_URL+'/storage/v1/object/fuel-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});if(!r.ok)throw new Error('Falha ao enviar foto/comprovante: '+await r.text());return path}
@@ -733,11 +750,11 @@ async function loadCoreOnline(){
   status.textContent='☁ Baixando...';
   if(ONLINE_ROLE==='employee')await refreshEmployeePermissions();
   const [cities,vehicles,drivers,routes,assignments,fuelings,workDays,maintenance,expenses,receivables,driverPayments,documents,messages,profiles,partsPurchases,serviceSales,messageRecipients,materialPurchases]=await Promise.all([
-   api('municipalities?select=*&order=name'),api('vehicles?select=*&order=created_at'),api('drivers?select=*&order=created_at'),
-   api('routes?select=*&order=created_at'),api('assignments?select=*&order=created_at'),api('fuelings?select=*&order=fueled_at.desc'),
-   api('work_days?select=*&order=work_date.desc'),api('maintenance?select=*&order=service_date.desc'),api('expenses?select=*&order=expense_date.desc'),
-   api('receivables?select=*&order=competence.desc'),api('driver_payments?select=*&order=competence.desc'),api('documents?select=*&order=created_at.desc'),
-   api('messages?select=*&order=sent_at.desc'),api('profiles?select=id,full_name,role,active'),api('parts_purchases?select=*&order=purchased_at.desc'),api('service_sales?select=*&order=recorded_at.desc'),api('rpc/list_message_recipients',{method:'POST',body:'{}'}).catch(()=>[]),api('material_purchases?select=*&order=purchase_date.desc,created_at.desc')
+   apiAll('municipalities?select=*&order=name'),apiAll('vehicles?select=*&order=created_at'),apiAll('drivers?select=*&order=created_at'),
+   apiAll('routes?select=*&order=created_at'),apiAll('assignments?select=*&order=created_at'),apiAll('fuelings?select=*&order=fueled_at.desc'),
+   apiAll('work_days?select=*&order=work_date.desc'),apiAll('maintenance?select=*&order=service_date.desc'),apiAll('expenses?select=*&order=expense_date.desc'),
+   apiAll('receivables?select=*&order=competence.desc'),apiAll('driver_payments?select=*&order=competence.desc'),apiAll('documents?select=*&order=created_at.desc'),
+   apiAll('messages?select=*&order=sent_at.desc'),apiAll('profiles?select=id,full_name,role,active'),apiAll('parts_purchases?select=*&order=purchased_at.desc'),apiAll('service_sales?select=*&order=recorded_at.desc'),api('rpc/list_message_recipients',{method:'POST',body:'{}'}).catch(()=>[]),apiAll('material_purchases?select=*&order=purchase_date.desc,created_at.desc')
   ]);
   const cityById=Object.fromEntries((cities||[]).map(c=>[c.id,c.name]));
   const local=structuredClone(blank);
