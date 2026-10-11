@@ -291,6 +291,9 @@ button{overflow-wrap:anywhere}button:focus-visible,a:focus-visible,input:focus-v
 <script>
 'use strict';
 
+// Validação compartilhada pelos fluxos de gravação, edição e sincronização.
+const isUuid=x=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x||'');
+
 const SUPABASE_URL='https://fqxslwjxuqklssgdwxug.supabase.co';
 const SUPABASE_KEY='sb_publishable_VH6Sxzm-4hZHJ0fxvxYV_A_-p3VMCwn';
 const AUTH_STORE='gef_online_session';
@@ -573,7 +576,6 @@ async function syncCoreOnline(){
  if(ONLINE_ROLE==='employee') return syncEmployeeFuelings();
  try{
   syncMsg('Sincronizando todos os módulos...');
-  const isUuid=x=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x||'');
   const comp=m=>(m&&m.length>=7?m.slice(0,7):nowMonth())+'-01';
   const cityMap={},vehicleMap={},driverMap={},routeMap={};
   for(const name of allCities()){
