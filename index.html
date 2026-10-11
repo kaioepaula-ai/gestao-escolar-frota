@@ -76,7 +76,7 @@ nav{top:0;position:relative}
 #authGate{position:fixed;inset:0;background:#f4f7fb;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.auth-card{width:min(430px,100%);background:white;border-radius:18px;padding:26px;box-shadow:0 18px 60px #0002}.auth-card h2{margin:0 0 6px}.auth-card input{width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1px solid #ccd4df;border-radius:9px}.auth-actions{display:flex;gap:8px;flex-wrap:wrap}.auth-status{margin-top:12px;font-size:14px}.user-badge{font-size:12px;background:#ffffff22;padding:7px 10px;border-radius:999px}.logout-btn{border:1px solid #ffffff55;background:transparent;color:white;border-radius:8px;padding:7px 10px;cursor:pointer}
 </style><style>
 .help-assistant{margin:14px 0;border:1px solid #dbe2ea;border-radius:14px;overflow:hidden;background:#fff}.help-assistant-head{background:#17233b;color:#fff;padding:12px 14px}.help-assistant-body{padding:12px;max-height:260px;overflow:auto;background:#fbfcfe}.va-msg{padding:10px 12px;border-radius:12px;margin:7px 0;line-height:1.4}.va-msg.bot{background:#eef2f7}.va-msg.user{background:#e8f0ff;margin-left:34px}.va-form{display:flex;gap:7px;padding:10px;border-top:1px solid #e4e7ec}.va-form input{flex:1;margin:0}.va-form button{white-space:nowrap}@media(max-width:560px){.va-form{flex-direction:column}}
-.bottom-help-btn{position:fixed;right:18px;bottom:18px;z-index:8000;border:0;border-radius:999px;background:#17233b;color:#fff;padding:13px 18px;box-shadow:0 8px 26px #0003;cursor:pointer;font-weight:700;font-size:14px}@media(max-width:560px){.bottom-help-btn{right:12px;bottom:12px}}</style>
+</style>
 <style id="responsive-layout">
 .municipality-month-card{margin:14px 0;background:#eff6ff;border:2px solid #2563eb;border-left:7px solid #2563eb;box-shadow:0 4px 16px #2563eb18}
 .municipality-month-card h3{margin:0 0 12px;color:#1e3a8a}
@@ -176,6 +176,30 @@ button{overflow-wrap:anywhere}button:focus-visible,a:focus-visible,input:focus-v
 .fuel-bulk-toolbar button:last-child{color:#b42318}
 @media(max-width:600px){.table-scroll>.fuel-records-table{min-width:1180px}.fuel-records-table .fuel-check-col input{width:20px;height:20px;min-width:20px;min-height:20px}.fuel-records-table td.actions button,.fuel-records-table .fuel-receipt-col button{min-height:40px}.fuel-bulk-toolbar button{min-height:40px}}
 @media print{.fuel-records-table{min-width:0!important;font-size:10px}.fuel-records-table th,.fuel-records-table td{padding:5px}.fuel-bulk-toolbar{display:none!important}}
+
+/* Padrão compacto para todas as tabelas de registros. */
+.table-scroll>.records-table{table-layout:auto;width:100%;font-size:12px}
+.records-table th,.records-table td{padding:10px 9px;line-height:1.35;vertical-align:middle;word-break:normal}
+.records-table th{font-size:11px;font-weight:700;color:#475467;background:#f8fafc;white-space:nowrap;overflow-wrap:normal}
+.records-table tbody tr:hover td{background:#f5f9ff}
+.records-table tbody tr:last-child td{border-bottom:0}
+.records-table .record-check-col{width:38px!important;min-width:38px!important;max-width:44px;padding:8px 7px;text-align:center;white-space:nowrap}
+.records-table .record-check-col input{width:17px;height:17px;min-width:17px;min-height:17px;margin:0;cursor:pointer}
+.records-table .record-number-col{width:1%;white-space:nowrap!important;overflow-wrap:normal!important;text-align:right;font-variant-numeric:tabular-nums}
+.records-table .record-number-col small{white-space:nowrap;display:block;margin-top:3px;color:#667085;font-size:10px}
+.records-table .record-date-col,.records-table .record-id-col{width:1%;white-space:nowrap!important;overflow-wrap:normal!important;font-variant-numeric:tabular-nums}
+.records-table .record-text-col{width:1%;min-width:90px;max-width:180px;white-space:normal!important;overflow-wrap:break-word}
+.records-table .record-description-col{min-width:160px;max-width:280px;white-space:normal!important;overflow-wrap:break-word}
+.records-table .record-actions-col{width:1%;white-space:nowrap!important;overflow-wrap:normal;text-align:left}
+.records-table td.actions{min-width:110px}
+.records-table button{display:inline-block;min-height:32px;padding:6px 8px;font-size:11px;white-space:nowrap;overflow-wrap:normal;border-radius:5px}
+.records-table td.actions button.secondary{color:#2563eb;background:#eff6ff;border:0}
+#sub_motoristas .records-table td.actions button{display:inline-block;width:auto;margin:0 2px;padding:6px 8px}
+.record-bulk-toolbar.row{display:flex;gap:8px;justify-content:flex-start!important;flex-wrap:wrap;margin:12px 0!important}
+.record-bulk-toolbar button{width:auto;min-height:36px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:12px;cursor:pointer}
+.record-bulk-toolbar button:last-child{color:#b42318}
+@media(max-width:600px){.records-table .record-check-col input{width:20px;height:20px;min-width:20px;min-height:20px}.records-table button,.record-bulk-toolbar button{min-height:40px}}
+@media print{.records-table{min-width:0!important;font-size:10px}.records-table th,.records-table td{padding:5px}.record-bulk-toolbar{display:none!important}}
 </style>
 </head>
 <body>
@@ -190,7 +214,7 @@ button{overflow-wrap:anywhere}button:focus-visible,a:focus-visible,input:focus-v
  </div>
 </div>
 
-<header><div class="brand"><img src="/icon.svg" alt="ADM YELLOW RIVER"><h1>ADM YELLOW RIVER</h1></div><div class="header-right"><div class="user-session"><span class="user-badge" id="onlineUser">V6.0 • Online</span><button class="header-btn logout-inline" id="logoutBtn" type="button">🚪 Sair</button></div><button class="header-btn" id="notesBtn" type="button">📝 Bloco de notas <span class="msg-count" id="noteCount">0</span></button><button class="header-btn" id="messagesBtn">💬 Recados <span class="msg-count" id="msgCount">0</span></button><button class="header-btn" id="syncBtn" type="button">☁ Enviar</button><button class="header-btn" id="cloudLoadBtn" type="button">↻ Atualizar online</button><span class="user-badge" id="syncStatus">Local preservado</span><button class="header-btn" id="myPasswordBtn" type="button">🔐 Minha senha</button><button class="header-btn" id="settingsBtn" type="button">⚙️ Configurações</button></div></header>
+<header><div class="brand"><img src="/icon.svg" alt="ADM YELLOW RIVER"><h1>ADM YELLOW RIVER</h1></div><div class="header-right"><div class="user-session"><span class="user-badge" id="onlineUser">V6.0 • Online</span><button class="header-btn logout-inline" id="logoutBtn" type="button">🚪 Sair</button></div><button class="header-btn" id="notesBtn" type="button">📝 Bloco de notas <span class="msg-count" id="noteCount">0</span></button><button class="header-btn" id="messagesBtn">💬 Recados <span class="msg-count" id="msgCount">0</span></button><button class="header-btn" id="syncBtn" type="button">☁ Enviar</button><button class="header-btn" id="cloudLoadBtn" type="button">↻ Atualizar online</button><span class="user-badge" id="syncStatus">Local preservado</span><button class="header-btn" id="myPasswordBtn" type="button">🔐 Minha senha</button><button class="header-btn" id="settingsBtn" type="button">⚙️ Configurações</button><button class="header-btn" id="helpBtn" type="button">❓ Ajuda</button></div></header>
 <div class="wrap">
 <nav id="nav">
 <button class="active" data-page="painel">Painel</button>
@@ -266,7 +290,7 @@ button{overflow-wrap:anywhere}button:focus-visible,a:focus-visible,input:focus-v
 <div class="cards"><div class="card"><small>💰 Receita lançada</small><div class="value" id="fIncome">R$ 0,00</div></div><div class="card"><small>⛽ Combustível</small><div class="value" id="fFuel">R$ 0,00</div></div><div class="card"><small>👨‍✈️ Motoristas pagos</small><div class="value" id="fDrivers">R$ 0,00</div></div><div class="card"><small>🧾 Manutenção + peças + extras + materiais</small><div class="value" id="fOther">R$ 0,00</div></div></div>
 <div class="card"><h3>📊 Resultado do período: <span id="fResult">R$ 0,00</span></h3><div id="financeCityTable"></div></div>
 </section>
-</main></div><button class="bottom-help-btn" id="helpBtn" type="button">❓ Ajuda</button>
+</main></div>
 
 
 <div class="modal" id="myPasswordModal"><div class="modal-card"><div class="modal-head"><div><h2 style="margin:0">🔐 Alterar minha senha</h2><p class="note" style="margin-top:4px">Esta alteração afeta somente a sua própria conta.</p></div><button class="closebtn" id="closeMyPassword">×</button></div><div class="card"><div class="row2"><label>Nova senha<input id="userNewPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></label><label>Confirmar nova senha<input id="userConfirmPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Digite novamente"></label></div><button class="primary" id="userChangePasswordBtn" type="button">🔐 Alterar minha senha</button></div></div></div>
@@ -952,7 +976,7 @@ function tbl(heads,rows){
  const allowed=(t,p,id)=>canRecordAction(t,id,p);
  const audit=rows.some(r=>['fuel','parts','sales','expenses','maintenance'].includes(r.type));
  const bulk=ONLINE_ROLE==='admin'||rows.some(r=>allowed(r.type,'select_all',r.id)||allowed(r.type,'bulk_delete',r.id));
- return `${bulk?`<div class="row ${fuelTable?'fuel-bulk-toolbar':''}" style="justify-content:flex-end;margin:8px 0"><button class="secondary" type="button" onclick="toggleAllBulk(this)">☑ Selecionar todos</button><button type="button" onclick="deleteBulkSelected(this)">🗑 Excluir selecionados</button></div>`:''}<table class="${fuelTable?'fuel-records-table':''}"><thead><tr>${bulk?(fuelTable?'<th class="fuel-check-col" title="Selecionar registros">Sel.</th>':'<th>Selecionar</th>'):''}${heads.map(h=>`<th class="${fuelTable?fuelColumnClass(h):''}" title="${esc(h)}">${fuelTable&&h==='Somar'?'Somar':h}</th>`).join('')}${rows.some(r=>['vehicles','drivers','routes','documents'].includes(r.type))?'<th>Documentos / Anexos</th>':''}${audit?(fuelTable?'<th class="fuel-author-col">Cadastrado por</th><th class="fuel-audit-date-col">Cadastrado em</th>':'<th>Cadastrado por</th><th>Data/hora do cadastro</th>'):''}<th></th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.rowClass||''} ${r.paid?'paidrow':''}">${bulk?`<td class="${fuelTable?'fuel-check-col':''}">${allowed(r.type,'select_all',r.id)||allowed(r.type,'bulk_delete',r.id)?`<input type="checkbox" class="bulk-row-check" data-type="${r.type}" data-id="${r.id}">`:''}</td>`:''}${[...r.cells,...(['vehicles','drivers','routes','documents'].includes(r.type)?[recordAttachments(r.type,r.id)]:[]),...(audit?recordAuditCells(r):[])].map((c,i)=>`<td class="${fuelTable?fuelColumnClass(heads[i]||(i===heads.length?'Cadastrado por':'Data/hora do cadastro')):''}">${c}</td>`).join('')}<td class="actions">${r.action??`${['vehicles','drivers','routes','fuel','maintenance','expenses'].includes(r.type)&&allowed(r.type,'update',r.id)?`<button class="secondary" onclick="editCoreItem('${r.type}','${r.id}')">Editar</button> `:''}${allowed(r.type,'delete',r.id)?`<button onclick="removeItem('${r.type}','${r.id}')">Excluir</button>`:''}`}</td></tr>`).join('')}</tbody></table>`;
+ return `${bulk?`<div class="row record-bulk-toolbar ${fuelTable?'fuel-bulk-toolbar':''}" style="justify-content:flex-end;margin:8px 0"><button class="secondary" type="button" onclick="toggleAllBulk(this)">☑ Selecionar todos</button><button type="button" onclick="deleteBulkSelected(this)">🗑 Excluir selecionados</button></div>`:''}<table class="${fuelTable?'fuel-records-table':''}"><thead><tr>${bulk?(fuelTable?'<th class="fuel-check-col" title="Selecionar registros">Sel.</th>':'<th>Selecionar</th>'):''}${heads.map(h=>`<th class="${fuelTable?fuelColumnClass(h):''}" title="${esc(h)}">${fuelTable&&h==='Somar'?'Somar':h}</th>`).join('')}${rows.some(r=>['vehicles','drivers','routes','documents'].includes(r.type))?'<th>Documentos / Anexos</th>':''}${audit?(fuelTable?'<th class="fuel-author-col">Cadastrado por</th><th class="fuel-audit-date-col">Cadastrado em</th>':'<th>Cadastrado por</th><th>Data/hora do cadastro</th>'):''}<th></th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.rowClass||''} ${r.paid?'paidrow':''}">${bulk?`<td class="${fuelTable?'fuel-check-col':''}">${allowed(r.type,'select_all',r.id)||allowed(r.type,'bulk_delete',r.id)?`<input type="checkbox" class="bulk-row-check" data-type="${r.type}" data-id="${r.id}">`:''}</td>`:''}${[...r.cells,...(['vehicles','drivers','routes','documents'].includes(r.type)?[recordAttachments(r.type,r.id)]:[]),...(audit?recordAuditCells(r):[])].map((c,i)=>`<td class="${fuelTable?fuelColumnClass(heads[i]||(i===heads.length?'Cadastrado por':'Data/hora do cadastro')):''}">${c}</td>`).join('')}<td class="actions">${r.action??`${['vehicles','drivers','routes','fuel','maintenance','expenses'].includes(r.type)&&allowed(r.type,'update',r.id)?`<button class="secondary" onclick="editCoreItem('${r.type}','${r.id}')">Editar</button> `:''}${allowed(r.type,'delete',r.id)?`<button onclick="removeItem('${r.type}','${r.id}')">Excluir</button>`:''}`}</td></tr>`).join('')}</tbody></table>`;
 }
 
 async function saveEmployeeCoreEdit(type,x){
@@ -1608,8 +1632,40 @@ $('helpModal').addEventListener('click',e=>{if(e.target===$('helpModal'))$('help
 $('helpSearch').addEventListener('input',e=>renderHelp(e.target.value));
 
 
+function recordColumnClass(heading){
+ const h=String(heading||'').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+ if(/^(selecionar|sel\.|somar)$/.test(h))return 'record-check-col';
+ if(/(valor|total|salario|receita|recebido|despesa|combustivel|resultado|saldo|bruto|liquido|retencao|imposto|litros|quantidade|horimetro|\bkm\b|percentual|%)/.test(h))return 'record-number-col';
+ if(/(data|hora|competencia|vencimento|admissao|inicio|fim|cadastrado em)/.test(h))return 'record-date-col';
+ if(/^(acoes|comprovante|documentos.*anexos)$/.test(h)||!h)return 'record-actions-col';
+ if(/(observac|descricao|referencia|recado|servico)/.test(h))return 'record-description-col';
+ if(/^(cpf|cnh|pix|placa|telefone|agencia|conta|operacao|nota|n[ºo].*nota)$/.test(h))return 'record-id-col';
+ return 'record-text-col';
+}
 function prepareResponsiveTables(root=document){
  root.querySelectorAll('table').forEach(table=>{
+  table.classList.add('records-table');
+  const headers=[...(table.tHead?.rows?.[0]?.cells||[])];
+  const headings=headers.map(th=>th.dataset.recordHeading||(th.dataset.recordHeading=th.textContent.trim()));
+  headers.forEach((th,i)=>{
+   th.classList.add(recordColumnClass(headings[i]));
+   if(headings[i]==='Selecionar'&&th.textContent!=='Sel.'){th.title='Selecionar registros';th.textContent='Sel.'}
+  });
+  [...table.tBodies].forEach(body=>[...body.rows].forEach(row=>[...row.cells].forEach((cell,i)=>{
+   if(cell.colSpan>1)return;
+   const heading=headings[i]||'';
+   const controls=[...cell.querySelectorAll('input')];
+   const checkOnly=controls.length>0&&controls.every(input=>input.type==='checkbox'||input.type==='radio')&&!cell.textContent.trim();
+   const cls=checkOnly?'record-check-col':cell.classList.contains('actions')?'record-actions-col':recordColumnClass(heading);
+   cell.classList.add(cls);
+   if(cls==='record-date-col'){
+    [...cell.childNodes].forEach(node=>{
+     if(node.nodeType!==3)return;
+     const text=node.textContent.trim(),match=text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+     if(match)node.textContent=match[3]+'/'+match[2]+'/'+match[1];
+    });
+   }
+  })));
   if(table.closest('.table-scroll'))return;
   const wrap=document.createElement('div');wrap.className='table-scroll';wrap.tabIndex=0;wrap.setAttribute('role','region');wrap.setAttribute('aria-label','Tabela de registros. Role para os lados para ver todas as colunas.');
   table.parentNode.insertBefore(wrap,table);wrap.appendChild(table);
