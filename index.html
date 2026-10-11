@@ -77,6 +77,11 @@ nav{top:0;position:relative}
 .help-assistant{margin:14px 0;border:1px solid #dbe2ea;border-radius:14px;overflow:hidden;background:#fff}.help-assistant-head{background:#17233b;color:#fff;padding:12px 14px}.help-assistant-body{padding:12px;max-height:260px;overflow:auto;background:#fbfcfe}.va-msg{padding:10px 12px;border-radius:12px;margin:7px 0;line-height:1.4}.va-msg.bot{background:#eef2f7}.va-msg.user{background:#e8f0ff;margin-left:34px}.va-form{display:flex;gap:7px;padding:10px;border-top:1px solid #e4e7ec}.va-form input{flex:1;margin:0}.va-form button{white-space:nowrap}@media(max-width:560px){.va-form{flex-direction:column}}
 .bottom-help-btn{position:fixed;right:18px;bottom:18px;z-index:8000;border:0;border-radius:999px;background:#17233b;color:#fff;padding:13px 18px;box-shadow:0 8px 26px #0003;cursor:pointer;font-weight:700;font-size:14px}@media(max-width:560px){.bottom-help-btn{right:12px;bottom:12px}}</style>
 <style id="responsive-layout">
+.municipality-month-card{margin:14px 0;background:#eff6ff;border:2px solid #2563eb;border-left:7px solid #2563eb;box-shadow:0 4px 16px #2563eb18}
+.municipality-month-card h3{margin:0 0 12px;color:#1e3a8a}
+.municipality-month-card label{color:#1e3a8a;font-size:14px;font-weight:700}
+.municipality-month-card input{border:2px solid #2563eb;background:#fff;font-weight:700;max-width:320px;display:block;min-height:48px;color:#17233b}
+.municipality-month-card .note{color:#1e40af;line-height:1.5;margin:6px 0 0}
 .wrap{grid-template-columns:220px minmax(0,1fr)}
 header{height:auto;min-height:64px;padding-top:8px;padding-bottom:8px;gap:14px}
 .header-right{min-width:0}.brand{flex-shrink:0}
@@ -778,12 +783,12 @@ function metrics(city='',month=''){
  return {income,billed,receivable,fuel,drivers,expenses,maint,other:expenses+maint,result:income-fuel-drivers-expenses-maint}
 }
 let selectedCity=''; let selectedMunicipalityMonth=''; let monthCity=''; let activeSub='resumo';
-function municipalityMonthSelector(){return `<div class="card" style="margin:14px 0"><h3>${esc(selectedCity)} — Mês de referência</h3><label>Escolha o mês para consultar<input id="municipalityMonth" type="month" value="${selectedMunicipalityMonth}" onchange="setMunicipalityMonth(this.value)"></label><p class="note">O painel e os lançamentos abaixo mostram somente o mês escolhido.</p></div>`}
+function municipalityMonthSelector(){return `<div class="card municipality-month-card"><h3>📅 ${esc(selectedCity)} — Mês de referência</h3><label for="municipalityMonth">Escolha o mês das informações<input id="municipalityMonth" type="month" value="${selectedMunicipalityMonth}" onchange="setMunicipalityMonth(this.value)"></label><p class="note">${selectedMunicipalityMonth?'O mês atual abre automaticamente. Para consultar outro período, altere o mês acima.':'Escolha um mês acima para abrir as informações deste município.'} O painel e os lançamentos mostram somente o mês selecionado.</p></div>`}
 window.setMunicipalityMonth=month=>{selectedMunicipalityMonth=/^\d{4}-(0[1-9]|1[0-2])$/.test(month)?month:'';monthCity=selectedCity;renderMunicipios();applyEmployeePermissions()};
 $('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-page]');if(!b)return;document.querySelectorAll('#nav button,.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.page).classList.add('active');render()});
 $('cityForm').addEventListener('submit',async e=>{e.preventDefault();const name=$('newCity').value.trim();if(!name)return;if(allCities().some(c=>c.toLowerCase()===name.toLowerCase())){selectedCity=allCities().find(c=>c.toLowerCase()===name.toLowerCase())||name;$('newCity').value='';render();return}db.cities.push({id:uid(),name});selectedCity=name;$('newCity').value='';save();if(ONLINE_ROLE==='admin')await syncCoreOnline()});
 $('routeForm').addEventListener('submit',async e=>{e.preventDefault();await saveRegistrationWithFiles('routes',e.target.querySelector('button.primary'))});
-window.setCityTab=city=>{selectedCity=city;selectedMunicipalityMonth='';monthCity=city;activeSub=ONLINE_ROLE==='employee'?(Object.entries(EMPLOYEE_TAB_MODULE).find(([t,m])=>canEmployee(m,'view'))?.[0]||'abastecimentos'):'resumo';renderMunicipios();applyEmployeePermissions()}
+window.setCityTab=city=>{selectedCity=city;selectedMunicipalityMonth=monthOf(todayLocal());monthCity=city;activeSub=ONLINE_ROLE==='employee'?(Object.entries(EMPLOYEE_TAB_MODULE).find(([t,m])=>canEmployee(m,'view'))?.[0]||'abastecimentos'):'resumo';renderMunicipios();applyEmployeePermissions()}
 window.setSubtab=id=>{activeSub=id;document.querySelectorAll('.subtab,.subpage').forEach(x=>x.classList.remove('active'));document.querySelector(`.subtab[data-sub="${id}"]`)?.classList.add('active');$('sub_'+id)?.classList.add('active');const pb=document.querySelector('.municipality-print'),sp=$('sub_'+id);if(pb&&sp){const firstCard=sp.querySelector('.card'),action=firstCard?.querySelector('button.primary');if(action){pb.style.display='inline-flex';pb.style.margin='0 0 0 8px';action.insertAdjacentElement('afterend',pb)}else if(firstCard)firstCard.insertBefore(pb,firstCard.firstChild);else sp.insertBefore(pb,sp.firstChild)}}
 window.togglePaid=async(id,checked,event)=>{
  if(event){event.preventDefault();event.stopPropagation()}
@@ -922,7 +927,7 @@ function renderMunicipios(){
  const cities=allCities();if(!selectedCity||!cities.includes(selectedCity))selectedCity=cities[0]||'';
  $('cityTabs').innerHTML=cities.length?cities.map(c=>`<button class="city-tab ${c===selectedCity?'active':''}" onclick="setCityTab('${esc(c).replace(/'/g,"&#39;")}')">${esc(c)}</button>`).join(''):'<div class="empty">Cadastre o primeiro município.</div>';
  if(!selectedCity){$('cityArea').innerHTML='';return}
- if(monthCity!==selectedCity){selectedMunicipalityMonth='';monthCity=selectedCity;}
+ if(monthCity!==selectedCity){selectedMunicipalityMonth=monthOf(todayLocal());monthCity=selectedCity;}
  const monthSelector=municipalityMonthSelector();
  if(!selectedMunicipalityMonth){$('cityArea').innerHTML=monthSelector+'<div class="empty">Escolha o mês de referência para abrir as informações deste município.</div>';return}
  const hm=selectedMunicipalityMonth;
