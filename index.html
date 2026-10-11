@@ -75,7 +75,75 @@ nav{top:0;position:relative}
 #authGate{position:fixed;inset:0;background:#f4f7fb;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.auth-card{width:min(430px,100%);background:white;border-radius:18px;padding:26px;box-shadow:0 18px 60px #0002}.auth-card h2{margin:0 0 6px}.auth-card input{width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1px solid #ccd4df;border-radius:9px}.auth-actions{display:flex;gap:8px;flex-wrap:wrap}.auth-status{margin-top:12px;font-size:14px}.user-badge{font-size:12px;background:#ffffff22;padding:7px 10px;border-radius:999px}.logout-btn{border:1px solid #ffffff55;background:transparent;color:white;border-radius:8px;padding:7px 10px;cursor:pointer}
 </style><style>
 .help-assistant{margin:14px 0;border:1px solid #dbe2ea;border-radius:14px;overflow:hidden;background:#fff}.help-assistant-head{background:#17233b;color:#fff;padding:12px 14px}.help-assistant-body{padding:12px;max-height:260px;overflow:auto;background:#fbfcfe}.va-msg{padding:10px 12px;border-radius:12px;margin:7px 0;line-height:1.4}.va-msg.bot{background:#eef2f7}.va-msg.user{background:#e8f0ff;margin-left:34px}.va-form{display:flex;gap:7px;padding:10px;border-top:1px solid #e4e7ec}.va-form input{flex:1;margin:0}.va-form button{white-space:nowrap}@media(max-width:560px){.va-form{flex-direction:column}}
-.bottom-help-btn{position:fixed;right:18px;bottom:18px;z-index:8000;border:0;border-radius:999px;background:#17233b;color:#fff;padding:13px 18px;box-shadow:0 8px 26px #0003;cursor:pointer;font-weight:700;font-size:14px}@media(max-width:560px){.bottom-help-btn{right:12px;bottom:12px}}</style></head>
+.bottom-help-btn{position:fixed;right:18px;bottom:18px;z-index:8000;border:0;border-radius:999px;background:#17233b;color:#fff;padding:13px 18px;box-shadow:0 8px 26px #0003;cursor:pointer;font-weight:700;font-size:14px}@media(max-width:560px){.bottom-help-btn{right:12px;bottom:12px}}</style>
+<style id="responsive-layout">
+.wrap{grid-template-columns:220px minmax(0,1fr)}
+header{height:auto;min-height:64px;padding-top:8px;padding-bottom:8px;gap:14px}
+.header-right{min-width:0}.brand{flex-shrink:0}
+.card,.page,.subpage,.grid>*,.row>*,.row2>*,label{min-width:0}
+.cards{grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
+.grid,.charts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.row{grid-template-columns:repeat(3,minmax(0,1fr))}.row2{grid-template-columns:repeat(2,minmax(0,1fr))}
+input,select,textarea{max-width:100%;min-width:0;font:inherit}
+input[type=checkbox],input[type=radio]{width:20px;height:20px;min-width:20px;margin:0;vertical-align:middle;accent-color:var(--accent)}
+input[type=file]{white-space:normal;overflow:hidden;font-size:13px}
+button,a,input[type=checkbox],input[type=radio],select{touch-action:manipulation}
+button{overflow-wrap:anywhere}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.table-scroll:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+.value,.message,.note,.daily-message,.auth-status{overflow-wrap:anywhere}
+.table-scroll{width:100%;max-width:100%;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;margin-top:12px;border:1px solid var(--line);border-radius:8px}
+.table-scroll>table{display:table;margin-top:0;width:100%;white-space:normal}
+.table-scroll th,.table-scroll td{overflow-wrap:break-word}
+.actions{min-width:100px}.actions button{min-height:40px;padding:8px}
+.modal{overflow:auto;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.modal-card{min-width:0;max-width:100%;max-height:calc(100dvh - 24px);overscroll-behavior-y:contain}
+.modal-head{position:sticky;top:-16px;background:#fff;z-index:5;padding:8px 0}
+.closebtn{min-width:44px;min-height:44px}
+#authGate{overflow-y:auto}#authGate .auth-card{max-height:calc(100dvh - 32px);overflow-y:auto}
+@media(max-width:1100px){
+ .wrap{grid-template-columns:180px minmax(0,1fr)}main{padding:16px}
+ header{align-items:flex-start}.header-right{gap:6px}
+ .row{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:900px){
+ .wrap{grid-template-columns:minmax(0,1fr);min-height:0}
+ header{position:relative}
+ nav{position:relative;top:auto;display:flex;gap:6px;overflow-x:auto;padding:8px 12px;overscroll-behavior-x:contain}
+ nav button{width:auto;min-width:0;flex:0 0 auto;white-space:nowrap;min-height:44px;margin:0}
+ .grid,.charts{grid-template-columns:minmax(0,1fr)}
+ .row,.row2{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .table-scroll>table{min-width:640px}
+ .city-tab,.subtab{min-height:44px}
+}
+@media(max-width:600px){
+ header{position:relative;padding:10px;align-items:flex-start}
+ header .brand{flex:0 0 auto}header .brand h1{font-size:14px;max-width:92px;line-height:1.15}header .brand img{width:36px;height:36px}
+ .header-right{flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .header-right .user-session{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px}
+ .header-right .user-badge{white-space:normal;overflow-wrap:anywhere}
+ .header-right .header-btn{width:100%;min-height:44px;font-size:12px;padding:7px 5px;white-space:normal}
+ .header-right .logout-inline{width:auto}#syncStatus{grid-column:1/-1;text-align:center}
+ main{padding:12px;padding-bottom:max(24px,env(safe-area-inset-bottom))}
+ .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .cards .card{padding:12px}.value{font-size:19px}
+ .row,.row2{grid-template-columns:minmax(0,1fr)}
+ input,select,textarea{font-size:16px;min-height:44px}
+ input[type=checkbox],input[type=radio]{min-height:20px}
+ button.primary,button.secondary{min-height:44px}
+ .city-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .subtabs{display:flex;flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;overscroll-behavior-x:contain}
+ .subtab{flex:0 0 auto;white-space:nowrap}
+ .toolbar label,.historybar label{min-width:0;flex:1 1 100%}
+ .modal{padding:8px;align-items:flex-start!important;justify-content:center}
+ .modal-card,#settingsModal .modal-card{width:100%;max-height:calc(100dvh - 16px);padding:12px}
+ .modal-head{top:-12px}.daily-message{padding:12px;gap:10px}
+ .daily-message #dailyMessageText{font-size:15px}
+ #authGate{padding:12px}#authGate .auth-card{padding:20px}
+ .receipt-upload button{max-width:100%}.receipt-upload .badge{display:block;margin:8px 0 0!important}
+}
+@media(max-width:360px){.cards{grid-template-columns:minmax(0,1fr)}.value{font-size:21px}header .brand h1{max-width:76px;font-size:12px}}
+@media print{.table-scroll{overflow:visible;border:0}.table-scroll>table{min-width:0!important}.modal-head{position:static}}
+</style>
+</head>
 <body>
 <div class="modal" id="notesModal"><div class="modal-card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><h3 style="margin:0">📝 Meu bloco de notas</h3><p class="note">Anotações particulares deste usuário. Defina uma data para o sistema lembrar você.</p></div><button class="secondary" type="button" id="closeNotes">Fechar</button></div><div class="card"><label>Anotação<textarea id="noteText" rows="3" placeholder="O que você precisa lembrar?"></textarea></label><div class="row"><label>Lembrar em<input id="noteDate" type="date"></label></div><button class="primary" type="button" id="saveNoteBtn">Salvar anotação</button></div><div id="notesList"></div></div></div>
 <div id="authGate">
@@ -1236,6 +1304,18 @@ $('helpBtn').addEventListener('click',()=>{$('helpModal').classList.add('open');
 $('closeHelp').addEventListener('click',()=>$('helpModal').classList.remove('open'));
 $('helpModal').addEventListener('click',e=>{if(e.target===$('helpModal'))$('helpModal').classList.remove('open')});
 $('helpSearch').addEventListener('input',e=>renderHelp(e.target.value));
+
+
+function prepareResponsiveTables(root=document){
+ root.querySelectorAll('table').forEach(table=>{
+  if(table.closest('.table-scroll'))return;
+  const wrap=document.createElement('div');wrap.className='table-scroll';wrap.tabIndex=0;wrap.setAttribute('role','region');wrap.setAttribute('aria-label','Tabela de registros. Role para os lados para ver todas as colunas.');
+  table.parentNode.insertBefore(wrap,table);wrap.appendChild(table);
+ });
+}
+prepareResponsiveTables();
+const responsiveTableObserver=new MutationObserver(()=>prepareResponsiveTables());
+responsiveTableObserver.observe(document.body,{childList:true,subtree:true});
 
 $('historyDate').value=todayLocal();
 render();renderMessages();renderHelp();
