@@ -200,6 +200,11 @@ button{overflow-wrap:anywhere}button:focus-visible,a:focus-visible,input:focus-v
 .record-bulk-toolbar button:last-child{color:#b42318}
 @media(max-width:600px){.records-table .record-check-col input{width:20px;height:20px;min-width:20px;min-height:20px}.records-table button,.record-bulk-toolbar button{min-height:40px}}
 @media print{.records-table{min-width:0!important;font-size:10px}.records-table th,.records-table td{padding:5px}.record-bulk-toolbar{display:none!important}}
+
+.application-update-notice{display:none;position:relative;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:#eff6ff;border-bottom:1px solid #bfdbfe;color:#1e40af;font-size:13px;line-height:1.4}
+.application-update-notice button{flex-shrink:0;background:#fff;color:#1e40af;border-color:#93c5fd;white-space:nowrap}
+@media(max-width:600px){.application-update-notice{flex-direction:column;align-items:stretch;font-size:12px}.application-update-notice button{min-height:40px}}
+@media print{.application-update-notice{display:none!important}}
 </style>
 </head>
 <body>
@@ -214,6 +219,7 @@ button{overflow-wrap:anywhere}button:focus-visible,a:focus-visible,input:focus-v
  </div>
 </div>
 
+<div id="applicationUpdateNotice" class="application-update-notice" role="status" aria-live="polite"><span id="applicationUpdateText"></span><button class="secondary" id="applicationUpdateBtn" type="button">↻ Atualizar aplicativo</button></div>
 <header><div class="brand"><img src="/icon.svg" alt="ADM YELLOW RIVER"><h1>ADM YELLOW RIVER</h1></div><div class="header-right"><div class="user-session"><span class="user-badge" id="onlineUser">V6.0 • Online</span><button class="header-btn logout-inline" id="logoutBtn" type="button">🚪 Sair</button></div><button class="header-btn" id="notesBtn" type="button">📝 Bloco de notas <span class="msg-count" id="noteCount">0</span></button><button class="header-btn" id="messagesBtn">💬 Recados <span class="msg-count" id="msgCount">0</span></button><button class="header-btn" id="syncBtn" type="button">☁ Enviar</button><button class="header-btn" id="cloudLoadBtn" type="button">↻ Atualizar online</button><span class="user-badge" id="syncStatus">Local preservado</span><button class="header-btn" id="myPasswordBtn" type="button">🔐 Minha senha</button><button class="header-btn" id="settingsBtn" type="button">⚙️ Configurações</button><button class="header-btn" id="helpBtn" type="button">❓ Ajuda</button></div></header>
 <div class="wrap">
 <nav id="nav">
@@ -908,7 +914,7 @@ window.addEventListener('DOMContentLoaded',()=>{
  document.getElementById('settingsLogout').onclick=logoutOnline;
 document.getElementById('changeMyPasswordBtn').onclick=changeMyPassword;
  document.getElementById('syncBtn').onclick=syncCoreOnline;
- document.getElementById('cloudLoadBtn').onclick=loadCoreOnline;
+ document.getElementById('cloudLoadBtn').onclick=async()=>{if(await checkApplicationUpdate())return;await loadCoreOnline()};
  document.getElementById('myPasswordBtn').onclick=()=>document.getElementById('myPasswordModal').classList.add('open');
  document.getElementById('closeMyPassword').onclick=()=>document.getElementById('myPasswordModal').classList.remove('open');
  document.getElementById('myPasswordModal').addEventListener('click',e=>{if(e.target.id==='myPasswordModal')e.currentTarget.classList.remove('open')});
@@ -1677,18 +1683,99 @@ responsiveTableObserver.observe(document.body,{childList:true,subtree:true});
 
 $('historyDate').value=todayLocal();
 render();renderMessages();renderHelp();
-if('serviceWorker' in navigator)window.addEventListener('load',async()=>{
- let refreshing=false;
- navigator.serviceWorker.addEventListener('controllerchange',()=>{
-  if(refreshing)return;refreshing=true;location.reload();
+
+// Atualização da interface compartilhada por administrador e funcionários.
+const APPLICATION_SOURCE_SIGNATURE=applicationSourceSignature(document);
+let APPLICATION_CHECK_BUSY=false,APPLICATION_UPDATE_PENDING=false,APPLICATION_REFRESHING=false,APPLICATION_ETAG='';
+let APPLICATION_REQUESTS_IN_FLIGHT=0;
+const APPLICATION_DIRTY_FIELDS=new Map();
+const apiBeforeApplicationUpdates=api;
+api=async(...args)=>{APPLICATION_REQUESTS_IN_FLIGHT++;try{return await apiBeforeApplicationUpdates(...args)}finally{APPLICATION_REQUESTS_IN_FLIGHT--}};
+function applicationSourceSignature(root){return [...root.querySelectorAll('script:not([src]),style')].map(node=>node.textContent).join('\n')}
+function applicationFieldValue(el){return el.type==='file'?[...el.files||[]].map(file=>file.name+':'+file.size+':'+file.lastModified).join('|'):el.type==='checkbox'||el.type==='radio'?String(el.checked):String(el.value??'')}
+function isApplicationDraftField(el){
+ if(!el?.matches?.('input,select,textarea')||el.disabled||el.readOnly||el.type==='hidden'||el.closest('#authGate'))return false;
+ if(el.matches('.bulk-row-check,.fuel-sum-check,.machine-fuel-sum-check,.area-sum-check,.ep-check,.ep-municipality'))return false;
+ if(el.closest('.filters,.historybar,.municipality-month-card,.toolbar'))return false;
+ if(/filter|search/i.test(el.id||''))return false;
+ const action=el.getAttribute('onchange')||'';
+ if(/renderMunicipios|setMunicipalityMonth|setCityTab/.test(action))return false;
+ return !!el.closest('form,.card,.modal-card');
+}
+function rememberApplicationDraftStart(e){
+ const el=e.target;if(!isApplicationDraftField(el)||APPLICATION_DIRTY_FIELDS.has(el))return;
+ APPLICATION_DIRTY_FIELDS.set(el,applicationFieldValue(el));
+}
+document.addEventListener('focusin',rememberApplicationDraftStart,true);
+['input','change'].forEach(event=>document.addEventListener(event,e=>{
+ const el=e.target;if(!isApplicationDraftField(el)||APPLICATION_DIRTY_FIELDS.has(el))return;
+ APPLICATION_DIRTY_FIELDS.set(el,el.type==='checkbox'||el.type==='radio'?String(el.defaultChecked):String(el.defaultValue??''));
+},true));
+function hasApplicationWorkInProgress(){
+ if(APPLICATION_REQUESTS_IN_FLIGHT||window.FUEL_SAVE_LOCK||window.MACHINE_FUEL_SAVE_LOCK||window.EMPLOYEE_FUEL_SYNC_LOCK||MATERIAL_SAVE_LOCK||DOCUMENT_SAVE_LOCK||EXPENSE_SAVE_LOCK||ASSIGNMENT_SAVE_LOCK)return true;
+ if((db.fuel||[]).some(record=>record.pending))return true;
+ let dirty=false;
+ APPLICATION_DIRTY_FIELDS.forEach((value,el)=>{
+  if(!el.isConnected){APPLICATION_DIRTY_FIELDS.delete(el);return}
+  if(applicationFieldValue(el)!==value)dirty=true;
  });
+ return dirty;
+}
+function showApplicationUpdateNotice(){
+ const notice=document.getElementById('applicationUpdateNotice'),text=document.getElementById('applicationUpdateText');
+ if(!notice)return;
+ notice.style.display='flex';
+ if(text)text.textContent='Há melhorias disponíveis. Conclua ou limpe os campos em edição e envie os registros pendentes para atualizar o aplicativo.';
+}
+function refreshApplicationWhenSafe(){
+ if(!APPLICATION_UPDATE_PENDING)return false;
+ if(hasApplicationWorkInProgress()){showApplicationUpdateNotice();return true}
+ if(APPLICATION_REFRESHING)return true;
+ APPLICATION_REFRESHING=true;
+ location.reload();
+ return true;
+}
+async function checkApplicationUpdate(){
+ if(APPLICATION_UPDATE_PENDING)return refreshApplicationWhenSafe();
+ if(APPLICATION_CHECK_BUSY||navigator.onLine===false||document.visibilityState==='hidden')return false;
+ APPLICATION_CHECK_BUSY=true;
  try{
-  const reg=await navigator.serviceWorker.register('/sw.js?v=8',{updateViaCache:'none'});
-  const checkUpdate=()=>reg.update().catch(()=>{});
-  await checkUpdate();
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkUpdate()});
-  window.addEventListener('online',checkUpdate);
-  setInterval(checkUpdate,5*60*1000);
+  const opts={cache:'no-store',credentials:'same-origin'};
+  if(APPLICATION_ETAG){
+   const head=await fetch('/index.html',{...opts,method:'HEAD'});
+   if(!head.ok)return false;
+   const current=head.headers.get('etag');
+   if(current&&current!==APPLICATION_ETAG){APPLICATION_UPDATE_PENDING=true;return refreshApplicationWhenSafe()}
+   if(current)return false;
+  }
+  const response=await fetch('/index.html',opts);
+  if(!response.ok)return false;
+  const source=await response.text(),latest=new DOMParser().parseFromString(source,'text/html');
+  if(latest.title!=='ADM YELLOW RIVER'||!latest.querySelector('link[rel="manifest"]'))return false;
+  if(applicationSourceSignature(latest)!==APPLICATION_SOURCE_SIGNATURE){APPLICATION_UPDATE_PENDING=true;return refreshApplicationWhenSafe()}
+  APPLICATION_ETAG=response.headers.get('etag')||'';
+  return false;
+ }catch(e){console.warn('Não foi possível verificar a atualização do aplicativo.',e);return false}
+ finally{APPLICATION_CHECK_BUSY=false}
+}
+document.getElementById('applicationUpdateBtn').addEventListener('click',()=>checkApplicationUpdate());
+window.addEventListener('load',()=>{
+ checkApplicationUpdate();
+ setInterval(checkApplicationUpdate,60*1000);
+});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkApplicationUpdate()});
+window.addEventListener('online',checkApplicationUpdate);
+window.addEventListener('focus',checkApplicationUpdate);
+if('serviceWorker' in navigator)window.addEventListener('load',async()=>{
+ try{
+  const reg=await navigator.serviceWorker.register('/sw.js?v=9',{updateViaCache:'none'});
+  // Uma troca de worker não deve descartar um formulário em edição.
+  navigator.serviceWorker.addEventListener('controllerchange',()=>checkApplicationUpdate());
+  const updateWorker=()=>reg.update().catch(()=>{});
+  await updateWorker();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')updateWorker()});
+  window.addEventListener('online',updateWorker);
+  setInterval(updateWorker,5*60*1000);
  }catch(e){console.error('Falha ao atualizar aplicativo',e)}
 });
 </script>

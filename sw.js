@@ -1,13 +1,13 @@
-const CACHE='gestao-frota-shell-v8';
+const CACHE='gestao-frota-shell-v9';
 self.addEventListener('install',event=>{
- self.skipWaiting();
+ // Aguarda as telas antigas serem fechadas, preservando lançamentos em edição.
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['/manifest.webmanifest','/icon.svg'])).catch(()=>{}));
 });
 self.addEventListener('activate',event=>{
  event.waitUntil((async()=>{
   const keys=await caches.keys();
-  await Promise.all(keys.map(key=>caches.delete(key)));
-  await self.clients.claim();
+  await Promise.all(keys.filter(key=>key.startsWith('gestao-frota-shell-')).map(key=>caches.delete(key)));
+  // Novas navegações usam este worker; telas abertas atualizam com segurança.
  })());
 });
 self.addEventListener('fetch',event=>{
