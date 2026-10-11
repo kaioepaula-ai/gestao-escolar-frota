@@ -510,6 +510,8 @@ async function uploadMaintenanceReceipt(file,id){if(!file)return'';const sess=cu
 async function signedMaintenanceReceiptUrl(path){if(!path)return'';if(/^https?:\/\//i.test(path))return path;const sess=currentSession();const r=await fetch(SUPABASE_URL+'/storage/v1/object/sign/maintenance-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:300})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||'Não foi possível abrir o recibo.');return SUPABASE_URL+'/storage/v1'+(j.signedURL||j.signedUrl||'')}
 window.viewMaintenanceReceipt=async path=>{try{const u=await signedMaintenanceReceiptUrl(path);if(u)window.open(u,'_blank')}catch(e){alert(e.message)}}
 async function syncEmployeeFuelings(){
+ if(window.EMPLOYEE_FUEL_SYNC_LOCK)return;
+ window.EMPLOYEE_FUEL_SYNC_LOCK=true;
  try{
   syncMsg('Enviando abastecimentos...');
   const cities=await api('municipalities?select=id,name');
@@ -519,17 +521,21 @@ async function syncEmployeeFuelings(){
   for(const f of pending){
    const v=db.vehicles.find(x=>x.id===f.vehicleId);
    const mid=v&&cityMap[v.city];
-   if(!v||!mid) throw new Error('Veículo ou município não autorizado.');
-   await api('fuelings',{method:'POST',body:JSON.stringify({
+   if(!v||!mid||!isUuid(v.id)) throw new Error('Veículo ou município ainda não confirmado no banco. Os lançamentos pendentes foram mantidos.');
+   const confirmedRows=await api('fuelings',{method:'POST',body:JSON.stringify({
     municipality_id:mid, vehicle_id:v.id,
     station:f.station||'', liters:+f.liters||0, total_amount:+f.total||0,
     km:+f.km||0, notes:f.notes||'', receipt_photo_url:(f.receiptUrl=await uploadFuelReceipt(f))||null, fueling_type:f.fuelingType||'school', asset_name:f.assetName||null, responsible:f.responsible||'', created_by:currentSession().user.id
    })});
+   if(!confirmedRows?.[0]?.id)throw new Error('O banco não confirmou o envio. O lançamento continua pendente.');
+   f.id=confirmedRows[0].id;f.pending=false;
+   await preserveLegacyFuelCopies();
   }
   syncMsg('✓ Enviado');
   await loadCoreOnline();
   alert('Abastecimento(s) enviado(s) ao administrador.');
  }catch(e){console.error(e);syncMsg('Falha no envio',true);alert('Não foi possível enviar: '+e.message);}
+ finally{window.EMPLOYEE_FUEL_SYNC_LOCK=false;}
 }
 async function syncCoreOnline(){
  if(ONLINE_ROLE==='employee') return syncEmployeeFuelings();
@@ -721,6 +727,7 @@ window.saveEmployeeEdit=saveEmployeeEdit;
 
 async function loadCoreOnline(){
  await preserveLegacyFuelCopies();
+ if(ONLINE_ROLE==='employee'&&(db.fuel||[]).some(f=>f.pending))throw new Error('Existem abastecimentos pendentes de confirmação. Eles foram mantidos neste aparelho. Use Enviar antes de atualizar a lista.');
  const status=document.getElementById('syncStatus');
  try{
   status.textContent='☁ Baixando...';
