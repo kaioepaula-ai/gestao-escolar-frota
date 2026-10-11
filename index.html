@@ -458,12 +458,26 @@ async function apiAll(path){
  }
 }
 
+async function storageFetch(url,opts={}){
+ let session=await validSession();
+ const request=token=>fetch(url,{...opts,headers:{...(opts.headers||{}),apikey:SUPABASE_KEY,Authorization:'Bearer '+token}});
+ let response=await request(session.access_token);
+ if(!response.ok){
+  const message=await response.clone().text().catch(()=>'');
+  if(response.status===401||/exp.*claim.*timestamp|jwt.*expired|token.*expired/i.test(message)){
+   try{session=await refreshSession()}catch(e){throw new Error('Sua sessão expirou. Entre novamente para abrir o arquivo.');}
+   response=await request(session.access_token);
+  }
+ }
+ return response;
+}
+
 function syncMsg(t,bad=false){const e=$('syncStatus');if(e){e.textContent=t;e.style.background=bad?'#7f1d1d':'#ffffff22'}}
 
-async function uploadServiceReceipt(file){if(!file)return'';const sess=currentSession();const ext=(file.name.split('.').pop()||'jpg').replace(/[^a-zA-Z0-9]/g,'');const path=`${sess.user.id}/services/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;const r=await fetch(SUPABASE_URL+'/storage/v1/object/fuel-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});if(!r.ok)throw new Error('Falha ao enviar foto/comprovante: '+await r.text());return path}
+async function uploadServiceReceipt(file){if(!file)return'';const sess=currentSession();const ext=(file.name.split('.').pop()||'jpg').replace(/[^a-zA-Z0-9]/g,'');const path=`${sess.user.id}/services/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;const r=await storageFetch(SUPABASE_URL+'/storage/v1/object/fuel-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});if(!r.ok)throw new Error('Falha ao enviar foto/comprovante: '+await r.text());return path}
 window.viewServiceReceipt=async path=>{try{const u=await signedFuelReceiptUrl(path);if(u)window.open(u,'_blank')}catch(e){alert(e.message)}};
-async function uploadFuelReceipt(f){if(!f?.receiptFile)return f?.receiptUrl||'';const sess=currentSession();const ext=(f.receiptFile.name.split('.').pop()||'jpg').replace(/[^a-zA-Z0-9]/g,'');const path=`${sess.user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;const r=await fetch(SUPABASE_URL+'/storage/v1/object/fuel-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':f.receiptFile.type||'image/jpeg','x-upsert':'false'},body:f.receiptFile});if(!r.ok){const t=await r.text();throw new Error('Falha ao enviar comprovante: '+t)}f.receiptFile=null;return path}
-async function signedFuelReceiptUrl(path){if(!path)return'';if(/^https?:\/\//i.test(path))return path;const sess=currentSession();const r=await fetch(SUPABASE_URL+'/storage/v1/object/sign/fuel-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:300})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||'Não foi possível abrir o comprovante.');return SUPABASE_URL+'/storage/v1'+(j.signedURL||j.signedUrl||'')}
+async function uploadFuelReceipt(f){if(!f?.receiptFile)return f?.receiptUrl||'';const sess=currentSession();const ext=(f.receiptFile.name.split('.').pop()||'jpg').replace(/[^a-zA-Z0-9]/g,'');const path=`${sess.user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;const r=await storageFetch(SUPABASE_URL+'/storage/v1/object/fuel-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':f.receiptFile.type||'image/jpeg','x-upsert':'false'},body:f.receiptFile});if(!r.ok){const t=await r.text();throw new Error('Falha ao enviar comprovante: '+t)}f.receiptFile=null;return path}
+async function signedFuelReceiptUrl(path){if(!path)return'';if(/^https?:\/\//i.test(path))return path;const sess=currentSession();const r=await storageFetch(SUPABASE_URL+'/storage/v1/object/sign/fuel-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:300})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||'Não foi possível abrir o comprovante.');return SUPABASE_URL+'/storage/v1'+(j.signedURL||j.signedUrl||'')}
 window.viewFuelReceipt=async path=>{try{const u=await signedFuelReceiptUrl(path);if(u)window.open(u,'_blank')}catch(e){alert(e.message)}}
 window.attachFuelReceipt=id=>{const f=db.fuel.find(x=>x.id===id);if(!f)return;if(!canRecordAction('fuel',id,'update'))return alert('Sem permissão para alterar o comprovante.');const input=document.createElement('input');input.type='file';input.accept='image/*,application/pdf';input.onchange=async()=>{const file=input.files?.[0];if(!file)return;try{syncMsg('Enviando comprovante...');const path=await uploadDocumentFile(file);const rows=await api('fuelings?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({receipt_photo_url:path})});if(!rows?.length)throw Error('O banco não confirmou a alteração.');f.receiptUrl=path;f.receiptFile=null;save();syncMsg('✓ Comprovante salvo');}catch(e){syncMsg('Falha no comprovante',true);alert(e.message)}};input.click()}
 
@@ -482,7 +496,7 @@ async function preserveLegacyFuelCopies(){
 async function listPreservedFiles(bucket, ownerId){
  const session=await validSession(), files=[];
  for(let offset=0;;offset+=100){
-  const response=await fetch(SUPABASE_URL+'/storage/v1/object/list/'+bucket,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({prefix:ownerId,limit:100,offset,sortBy:{column:'name',order:'asc'}})});
+  const response=await storageFetch(SUPABASE_URL+'/storage/v1/object/list/'+bucket,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({prefix:ownerId,limit:100,offset,sortBy:{column:'name',order:'asc'}})});
   const rows=await response.json();
   if(!response.ok)throw Error(rows.message||'Não foi possível consultar os arquivos.');
   if(!Array.isArray(rows))throw Error('Resposta inválida ao consultar arquivos.');
@@ -524,8 +538,8 @@ window.openPreservedFiles=(module='school')=>{
  button.onclick=search;modal.querySelector('[data-close]').onclick=()=>modal.remove();document.body.append(modal);select.focus();
 };
 
-async function uploadMaintenanceReceipt(file,id){if(!file)return'';const sess=currentSession();const ext=(file.name?.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'').toLowerCase();const path=sess.user.id+'/'+(id||uid())+'-'+Date.now()+'.'+ext;const r=await fetch(SUPABASE_URL+'/storage/v1/object/maintenance-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':file.type||'application/octet-stream','x-upsert':'false'},body:file});if(!r.ok)throw new Error('Falha ao enviar recibo da manutenção.');return path}
-async function signedMaintenanceReceiptUrl(path){if(!path)return'';if(/^https?:\/\//i.test(path))return path;const sess=currentSession();const r=await fetch(SUPABASE_URL+'/storage/v1/object/sign/maintenance-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:300})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||'Não foi possível abrir o recibo.');return SUPABASE_URL+'/storage/v1'+(j.signedURL||j.signedUrl||'')}
+async function uploadMaintenanceReceipt(file,id){if(!file)return'';const sess=currentSession();const ext=(file.name?.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'').toLowerCase();const path=sess.user.id+'/'+(id||uid())+'-'+Date.now()+'.'+ext;const r=await storageFetch(SUPABASE_URL+'/storage/v1/object/maintenance-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':file.type||'application/octet-stream','x-upsert':'false'},body:file});if(!r.ok)throw new Error('Falha ao enviar recibo da manutenção.');return path}
+async function signedMaintenanceReceiptUrl(path){if(!path)return'';if(/^https?:\/\//i.test(path))return path;const sess=currentSession();const r=await storageFetch(SUPABASE_URL+'/storage/v1/object/sign/maintenance-receipts/'+path,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sess.access_token,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:300})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||'Não foi possível abrir o recibo.');return SUPABASE_URL+'/storage/v1'+(j.signedURL||j.signedUrl||'')}
 window.viewMaintenanceReceipt=async path=>{try{const u=await signedMaintenanceReceiptUrl(path);if(u)window.open(u,'_blank')}catch(e){alert(e.message)}}
 async function syncEmployeeFuelings(){
  if(window.EMPLOYEE_FUEL_SYNC_LOCK)return;
