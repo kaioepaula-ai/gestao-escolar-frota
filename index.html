@@ -213,6 +213,19 @@ button{overflow-wrap:anywhere}button:focus-visible,a:focus-visible,input:focus-v
 .complete-record-editor [data-attachments]{margin:12px 0}
 .complete-record-editor [data-error]:empty{display:none}
 @media(max-width:600px){.complete-record-editor .row2{grid-template-columns:minmax(0,1fr)}}
+
+/* Inspiração compartilhada: duas áreas equilibradas, com leitura confortável. */
+#dailyMessage{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:0;align-items:stretch;padding:0;margin:0 0 18px;border:1px solid #e5dcc4;border-left:1px solid #e5dcc4;border-radius:16px;overflow:hidden;background:#fffcf5;box-shadow:0 3px 12px rgba(31,45,61,.04)}
+#dailyMessage .daily-word{padding:22px 26px;background:linear-gradient(120deg,#fff8e5,#fffcf5)}
+#dailyMessage .daily-heading{display:flex;align-items:center;gap:9px;margin:0 0 12px;font-size:10px;line-height:1.4;font-weight:800;letter-spacing:1.25px;color:#927027}
+#dailyMessage .daily-heading span{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;border-radius:8px;background:#f3e6bc;font-size:17px;letter-spacing:0}
+#dailyMessage #dailyMessageText{font-size:18px;font-weight:650;line-height:1.55;color:#3e3726;overflow-wrap:break-word}
+#dailyMessage #dailyMessageRef{margin-top:10px;font-size:12px;line-height:1.5;font-weight:600;color:#8b733c}
+#dailyMessage .daily-encouragement{display:flex;flex-direction:column;justify-content:center;padding:22px 26px;border-left:1px solid #e9e1cf;background:rgba(255,255,255,.55)}
+#dailyMessage .daily-encouragement .daily-heading{color:#65758a}
+#dailyMessage #dailyMotivation{margin:0;padding:0;border:0;font-size:15px;font-weight:600;line-height:1.6;color:#34465c;overflow-wrap:break-word}
+#dailyMessage .daily-closing{display:block;margin-top:12px;font-size:11px;line-height:1.5;color:#84909d}
+@media(max-width:760px){#dailyMessage{grid-template-columns:minmax(0,1fr);border-radius:13px;margin-bottom:14px}#dailyMessage .daily-word,#dailyMessage .daily-encouragement{padding:17px 19px}#dailyMessage .daily-encouragement{border-left:0;border-top:1px solid #e9e1cf}#dailyMessage #dailyMessageText{font-size:16px;line-height:1.5}#dailyMessage #dailyMotivation{font-size:14px}#dailyMessage .daily-heading{margin-bottom:9px}}
 </style>
 </head>
 <body>
@@ -239,7 +252,7 @@ button{overflow-wrap:anywhere}button:focus-visible,a:focus-visible,input:focus-v
 <button data-page="financeiro">Financeiro</button>
 </nav>
 <main>
-<div id="dailyMessage" class="daily-message"><div class="daily-message-icon">✨</div><div><small>INSPIRAÇÃO DO DIA</small><div id="dailyMessageText">Carregando mensagem...</div><div id="dailyMessageRef"></div><div id="dailyMotivation" class="daily-motivation"></div></div></div>
+<aside id="dailyMessage" class="daily-message" aria-label="Inspiração do dia"><div class="daily-word"><small class="daily-heading"><span aria-hidden="true">✦</span> PALAVRA DO DIA</small><div id="dailyMessageText">Carregando mensagem...</div><div id="dailyMessageRef"></div></div><div class="daily-encouragement"><small class="daily-heading">MOTIVAÇÃO PARA HOJE</small><div id="dailyMotivation" class="daily-motivation"></div><span class="daily-closing">Um novo dia, uma nova oportunidade.</span></div></aside>
 <section id="painel" class="page active"><div class="dashboard-hero"><h2>🚐 Visão geral da operação</h2><p>Financeiro, frota e pendências importantes em um só lugar.</p></div>
 <h2>Painel Geral</h2><p class="note">Resumo consolidado de todos os municípios. <b id="panelReferenceLabel"></b></p><p class="note">Receita lançada: faturamentos líquidos + serviços. Recebido: pagamentos confirmados dos faturamentos. Resultado: receita lançada menos todas as despesas do período.</p>
 <div class="cards">
