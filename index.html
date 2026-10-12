@@ -1512,6 +1512,15 @@ $('oeCancelBtn').addEventListener('click',resetOfficeEmployeeForm);
 $('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-page]');if(b?.dataset.page==='escritorio')loadOfficeEmployees()});
 
 const ADVANCE_STATUS={pending:'Pendente',deducted:'Descontado',cancelled:'Cancelado'};
+function createAdvanceId(){
+ if(typeof globalThis.crypto?.randomUUID==='function')return globalThis.crypto.randomUUID();
+ if(typeof globalThis.crypto?.getRandomValues!=='function')throw Error('Não foi possível gerar o código do vale. Atualize o navegador.');
+ const bytes=globalThis.crypto.getRandomValues(new Uint8Array(16));
+ bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
+ const hex=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+ return hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20);
+}
+
 let ADVANCE_SAVE_LOCK=false;
 function advancePerson(x){return x.driver_id?driverName(x.driver_id):(officeEmployees.find(e=>e.id===x.office_employee_id)?.name||'Funcionário do escritório')}
 function advanceCanEdit(x){return x.status==='pending'&&(ONLINE_ROLE==='admin'||(canEmployee('staff_advances','view')&&canEmployee('staff_advances','update')&&x.created_by===currentSession()?.user?.id))}
@@ -1546,7 +1555,7 @@ window.openAdvanceEditor=(id,host=null)=>{
  const options=db.drivers.filter(d=>d.city===city&&(d.active!==false||d.id===x?.driver_id)).map(d=>`<option value="driver:${d.id}">${esc(d.name)} — Motorista</option>`).join('')+(ONLINE_ROLE==='admin'?officeEmployees.filter(e=>e.active!==false||e.id===x?.office_employee_id).map(e=>`<option value="office:${e.id}">${esc(e.name)} — Escritório</option>`).join(''):'');
  const modal=document.createElement('div');modal.className=host?'advance-inline-editor':'modal open complete-record-editor';if(!host)modal.style.justifyContent='center';
  modal.innerHTML=`<div class="${host?'card':'modal-card'}"><div class="modal-head"><h3>${x?'Editar':'Lançar'} vale</h3><button type="button" class="secondary" data-close>Fechar</button></div><form><p class="note">Município: <b>${esc(city)}</b></p><label>Nome do motorista / funcionário<select name="person" required ${x?'disabled':''}><option value="">Selecione</option>${options}</select></label><div class="row2"><label>Data do vale<input name="date" type="date" required></label><label>Valor<input name="amount" type="text" inputmode="decimal" required placeholder="R$ 0,00"></label></div><label>Mês do desconto<input name="month" type="month" required></label><label>Observação<textarea name="notes" maxlength="2000"></textarea></label><label>Comprovante (opcional)<input name="receipt" type="file" accept="image/*,application/pdf"><small>Foto ou PDF de até 10 MB. ${x?.receipt_url?'O comprovante atual será mantido se nenhum arquivo for escolhido.':''}</small></label><p class="note">O vale será descontado quando o pagamento do mês for confirmado.</p><div class="toolbar"><button type="submit" class="primary">${x?'Salvar alterações':'Salvar vale'}</button><button type="button" class="secondary" data-cancel>Cancelar</button></div></form></div>`;
- const form=modal.querySelector('form'),field=k=>form.elements.namedItem(k),btn=form.querySelector('.primary'),requestId=x?.id||uid();
+ const form=modal.querySelector('form'),field=k=>form.elements.namedItem(k),btn=form.querySelector('.primary'),requestId=x?.id||createAdvanceId();
  field('person').value=x?(x.driver_id?'driver:'+x.driver_id:'office:'+x.office_employee_id):'';
  field('date').value=x?.advance_date||todayLocal();field('amount').value=x?money(x.amount):'';field('month').value=x?.competence?.slice(0,7)||selectedMunicipalityMonth||nowMonth();field('notes').value=x?.notes||'';
  field('amount').onblur=()=>formatBRLInput(field('amount'));
