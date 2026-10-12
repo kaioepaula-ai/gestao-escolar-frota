@@ -357,6 +357,10 @@ button{overflow-wrap:anywhere}button:focus-visible,a:focus-visible,input:focus-v
 <script>
 'use strict';
 
+// Ao recarregar, abre a tela inicial no topo em vez de restaurar a rolagem anterior.
+if('scrollRestoration' in history)history.scrollRestoration='manual';
+window.addEventListener('load',()=>window.scrollTo(0,0),{once:true});
+
 // Validação compartilhada pelos fluxos de gravação, edição e sincronização.
 const isUuid=x=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x||'');
 
