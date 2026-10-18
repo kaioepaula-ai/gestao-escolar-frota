@@ -1099,7 +1099,16 @@ function editCompleteRecord(type,id){
 
 window.editCoreItem=editCompleteRecord;
 
+function unpaidFirst(rows,isPaid=x=>x.paid===true){
+ const unpaid=[],paid=[];
+ for(const row of rows)(isPaid(row)?paid:unpaid).push(row);
+ return [...unpaid,...paid];
+}
 function tbl(heads,rows){
+ const paymentOrderTypes=['fuel','parts','sales','maintenance','expenses','materials','receivables'];
+ if(rows.length&&rows.every(r=>paymentOrderTypes.includes(r.type))){
+  rows=unpaidFirst(rows,r=>{const x=(db[r.type]||[]).find(record=>record.id===r.id);return r.type==='receivables'?x?.status==='Pago':x?.paid===true;});
+ }
  const paymentTypes=['fuel','parts','sales','maintenance'];
  if(rows.length&&rows.every(r=>paymentTypes.includes(r.type))){heads=[...heads,'Pagamento'];rows=rows.map(r=>({...r,cells:[...r.cells,paymentStatusControl(r.type,(db[r.type]||[]).find(x=>x.id===r.id)||{id:r.id})]}));}
  if(!rows.length)return '<div class="empty">Nenhum registro ainda.</div>';
@@ -1302,6 +1311,7 @@ function updateAreaSelectedTotals(key){
 function mapMaterialPurchase(x,city){return {id:x.id,city,municipalityId:x.municipality_id,date:x.purchase_date,material:x.material,supplier:x.supplier,quantity:Number(x.quantity),unit:x.unit,unitPrice:Number(x.unit_price),total:Number(x.total_amount),paid:x.paid,paidAt:x.paid_at||'',notes:x.notes,receiptUrl:x.receipt_url||'',createdBy:x.created_by,createdAt:x.created_at}}
 function materialActions(x){if(ONLINE_ROLE==='employee'&&x.createdBy!==currentSession()?.user?.id)return '';return (canEmployee('material_purchases','update')?`<button class="secondary" type="button" onclick="editMaterialPurchase('${x.id}')">Editar</button> `:'')+(canEmployee('material_purchases','delete')?`<button type="button" onclick="deleteMaterialPurchase('${x.id}')">Excluir</button>`:'')}
 function renderMaterialsTab(rows,recordFilter=''){
+ rows=unpaidFirst(rows);
  const total=rows.reduce((sum,x)=>sum+x.total,0),paid=rows.filter(x=>x.paid).reduce((sum,x)=>sum+x.total,0);
  return `<div id="sub_materiais" class="subpage ${activeSub==='materiais'?'active':''}">${recordFilter}${ONLINE_ROLE==='admin'?'<p class="note">Compras de todos os funcionários, conforme o filtro de lançamentos.</p>':''}
  <div class="cards"><div class="card"><small>Total de materiais no mês</small><div class="value">${money(total)}</div></div><div class="card"><small>Pago</small><div class="value">${money(paid)}</div></div><div class="card"><small>Não pago</small><div class="value">${money(total-paid)}</div></div><div class="card"><small>☑️ Valor selecionado</small><div id="materiaisSelectedValue" class="value">R$ 0,00</div></div></div>
@@ -1545,7 +1555,7 @@ function renderAdvancesTab(){
  const municipalAdvances=(db.staffAdvances||[]).filter(a=>a.municipality_id===mid);
  const monthFilter=window.advanceMonthFilter||'all',all=municipalAdvances.filter(a=>monthFilter==='all'||a.competence.slice(0,7)===monthFilter);
  const discountMonths=[...new Set([month,...municipalAdvances.map(a=>a.competence.slice(0,7))])].sort();
- const filter=window.advanceStatusFilter||'all',rows=all.filter(a=>filter==='all'||a.status===filter);
+ const filter=window.advanceStatusFilter||'all',rows=unpaidFirst(all.filter(a=>filter==='all'||a.status===filter));
  const total=status=>all.filter(a=>a.status===status).reduce((n,a)=>n+Number(a.amount),0);
  const drivers=db.drivers.filter(d=>d.city===selectedCity&&d.active!==false);
  const table=rows.length?`<div class="table-scroll"><table class="records-table"><thead><tr><th>Funcionário / Motorista</th><th>Data do vale</th><th>Valor</th><th>Mês do desconto</th><th>Situação</th><th>Pagamento</th><th>Observação</th><th>Comprovante</th><th>Lançado por</th><th>Registrado em</th><th>Ações</th></tr></thead><tbody>${rows.map(a=>`<tr><td>${esc(advancePerson(a))}</td><td>${fuelDisplayDate(a.advance_date)}</td><td>${money(a.amount)}</td><td>${esc(a.competence.slice(0,7).split('-').reverse().join('/'))}</td><td><span class="badge ${a.status==='deducted'?'good':a.status==='pending'&&a.paid!==false?'warning':''}">${ADVANCE_STATUS[a.status]}</span></td><td>${paymentStatusControl('staffAdvances',a)}</td><td>${esc(a.notes||'—')}</td><td>${a.receipt_url?`<button class="secondary" type="button" onclick="viewFuelReceipt('${esc(a.receipt_url)}')">Ver arquivo</button>`:'—'}</td><td>${esc(db.registrationAuthors?.[a.created_by]||'Usuário')}</td><td>${esc(serverDateTime(a.created_at))}</td><td class="actions">${advanceActions(a)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhum vale encontrado para os filtros selecionados.</div>';
